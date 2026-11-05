@@ -1,0 +1,12 @@
+{
+    "routes": [
+        { "handle": "filesystem" },
+        { "src": "/", "dest": "/index.html" },
+        { "src": "/admin/?", "dest": "/index.html" },
+        { "src": "/contacto/?", "dest": "/index.html" },
+        { "src": "/guia/?", "dest": "/index.html" },
+        { "src": "/quienes-somos/?", "dest": "/index.html" },
+        { "src": "/inmueble/(.*)", "dest": "/index.html" },
+        { "src": "/.*", "status": 404, "dest": "/404.html" }
+    ]
+}

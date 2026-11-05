@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #630d16;
+  --color-primary-dark: #3C0811;
+  --color-primary-light: #8c1e2b;
+  --color-accent: #A98953;
+  --color-accent-strong: #8A6F3E;
+  --color-muted: #6B6258;
+  --color-ink: #111827;
+  --color-ink-soft: #544A3D;
+  --color-ink-strong: #1A1A1A;
+  --color-crema: #FAF7F2;
+  --color-crema-dark: #F3EDE2;
+  --color-sand: #E5D9C5;
+  --color-secondary: #000000;
+
+  /* Panel administrativo (ADM-42). Prefijo admin- para no alterar la web pública. */
+  --color-admin-bg: #141110;
+  --color-admin-surface: #1E1916;
+  --color-admin-surface-2: #27211C;
+  --color-admin-border: #3A302A;
+  --color-admin-text: #F5EFE6;
+  --color-admin-muted: #A89C8E;
+  --color-admin-primary: #A32433;
+  --color-admin-primary-hover: #B93A48;
+  --color-admin-accent: #C8A96B;
+  --color-admin-success: #5FA97F;
+  --color-admin-success-strong: #3F7A5A;
+  --color-admin-success-soft: #223A2E;
+  --color-admin-warning: #D9A24A;
+  --color-admin-warning-soft: #3A2F1C;
+  --color-admin-danger: #D96A6A;
+  --color-admin-danger-strong: #8F2F2F;
+  --color-admin-danger-soft: #3A2222;
+  --color-admin-info: #6C9BC7;
+  --color-admin-info-soft: #1F2E3A;
+  --color-admin-accent-soft: #33291A;
+
+  --font-sans: 'Montserrat', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+@layer base {
+  body {
+    @apply bg-crema text-secondary font-sans;
+    background-image: url('/fondo.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+}
+
+@layer utilities {
+  .drop-shadow-ideal-isometric {
+    filter: drop-shadow(26px 42px 28px rgba(52, 40, 28, 0.35)) drop-shadow(-8px 12px 14px rgba(52, 40, 28, 0.1));
+  }
+  .shadow-ideal-pill {
+    box-shadow: 0px 25px 55px -15px rgba(95, 80, 65, 0.16);
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.14s ease-out forwards;
+  }
+  .admin-shell {
+    background-image:
+      radial-gradient(1200px 600px at 15% -10%, rgba(200, 169, 107, 0.08), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(163, 36, 51, 0.10), transparent 55%);
+    background-attachment: fixed;
+  }
+  .admin-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-admin-border) transparent;
+  }
+  .admin-table th {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .admin-table th,
+  .admin-table td {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  .admin-shell * {
+    scrollbar-width: thin;
+    scrollbar-color: #3A302A transparent;
+  }
+  .admin-shell *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .admin-shell *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .admin-shell *::-webkit-scrollbar-thumb {
+    background: #3A302A;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
