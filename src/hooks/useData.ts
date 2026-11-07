@@ -21,8 +21,10 @@ export const useInmuebles = (page: number, filters: Record<string, string>) => {
 
             setLoading(true);
 
-            const from = page * PAGE_SIZE;
-            const to = from + PAGE_SIZE - 1;
+            // Se piden siempre desde la primera página hasta la actual: así, al
+            // volver atrás con una página guardada, el listado queda completo y
+            // la operación es idempotente (StrictMode ejecuta el efecto dos veces).
+            const to = (page + 1) * PAGE_SIZE - 1;
 
             const selectQuery = `*, barrios!inner(nombre, ciudad_id, ciudades!inner(nombre, departamento_id, departamentos!inner(nombre))), imagenes(url_storage, orden)`;
             // Se excluyen las vencidas al instante, sin esperar al cron que
@@ -68,7 +70,7 @@ export const useInmuebles = (page: number, filters: Record<string, string>) => {
                 query = query.lte('precio', Number(activeFilters.precio_max));
             }
 
-            query = query.range(from, to)
+            query = query.range(0, to)
                 .order('destacado', { ascending: false })
                 .order('publicado_at', { ascending: false });
 
@@ -85,8 +87,8 @@ export const useInmuebles = (page: number, filters: Record<string, string>) => {
                         portadaUrl: imgs[0]?.url_storage ? getImageUrl(imgs[0].url_storage) : undefined
                     };
                 })) as unknown as InmuebleRow[];
-                // Si es la página 0 (nueva búsqueda), sobreescribir. Si es > 0, añadir al final.
-                setInmuebles(prev => page === 0 ? formatted : [...prev, ...formatted]);
+                // La lista se reemplaza completa (0..to), sin duplicar al re-ejecutar.
+                setInmuebles(formatted);
 
                 if (count !== null) {
                     setTotal(count);

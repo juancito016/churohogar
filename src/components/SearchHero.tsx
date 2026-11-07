@@ -18,7 +18,7 @@ import portadaUrl1 from './imagenes/casao.webp';
 import fondotarjetaUrl from './imagenes/fondotarjeta.webp';
 
 interface SearchHeroProps {
-    onSearch: (filters: any, query?: string) => void;
+    onSearch: (filters: any, query?: string, options?: { scrollToResults?: boolean }) => void;
     initialFilters?: any;
     /** Texto de la búsqueda inteligente que ya está aplicado (se conserva al remontar). */
     initialQuery?: string;
@@ -157,6 +157,13 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
         fetchDepartamentos();
     }, [fetchDepartamentos]);
 
+    // Si se llega con ubicación en la URL (enlace compartido o volver atrás), hay
+    // que cargar las ciudades del departamento para mostrar "Tarija, Yacuiba".
+    const initialDeptoRef = useRef(initialFilters.departamento || '');
+    useEffect(() => {
+        if (initialDeptoRef.current) getCiudadesByDepto(initialDeptoRef.current);
+    }, [getCiudadesByDepto]);
+
     const tipoPropiedadOptions = [
         { value: '', label: '¿Qué buscas?' },
         { value: 'Casa', label: 'Casa', icon: FaHome },
@@ -288,8 +295,9 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
             setMobileFiltersOpen(true);
         }
         // El texto se conserva por si el visitante vuelve al modo inteligente,
-        // pero aquí solo viajan los filtros.
-        onSearch(buildFilters(), '');
+        // pero aquí solo viajan los filtros. No se baja a los resultados: el
+        // cambio de modo no debe mover la vista.
+        onSearch(buildFilters(), '', { scrollToResults: false });
         if (refocusChip) {
             setTimeout(() => smartChipRef.current?.focus({ preventScroll: true }), 0);
         }

@@ -14,6 +14,12 @@ import { useSemanticSearch, type SemanticBudget } from '../hooks/useSemanticSear
 /** Se puede apagar con VITE_FEATURE_SEMANTIC_SEARCH=false para volver al listado anterior. */
 const SEMANTIC_ENABLED = import.meta.env.VITE_FEATURE_SEMANTIC_SEARCH !== 'false';
 
+/**
+ * Posición del listado guardada antes de abrir una ficha. Vive en sessionStorage
+ * porque la navegación a la ficha es una carga completa (las tarjetas son <a>).
+ */
+const SCROLL_KEY = 'churo:landing-scroll';
+
 /** Por debajo de este valor la búsqueda no encontró coincidencias claras (hallazgo de F5). */
 const LOW_RELEVANCE = 0.45;
 
@@ -104,6 +110,31 @@ export const LandingPage: React.FC = () => {
 
     const { inmuebles, loading, totalPages } = useInmuebles(page, filters);
 
+    // Al volver atrás desde una ficha, el listado recupera la posición de scroll.
+    // La navegación a la ficha es una carga completa, por eso la marca vive en
+    // sessionStorage y se detecta con el tipo de navegación del navegador.
+    React.useEffect(() => {
+        const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+        if (navEntry?.type !== 'back_forward') return;
+        const saved = Number(sessionStorage.getItem(SCROLL_KEY) || 0);
+        if (!saved) return;
+
+        // La lista se monta vacía y crece al cargar: se reintenta hasta que la
+        // página tenga altura suficiente para llegar al punto guardado.
+        let elapsed = 0;
+        const tick = () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            if (max >= saved) {
+                window.scrollTo(0, saved);
+                return;
+            }
+            elapsed += 100;
+            if (elapsed < 4000) window.setTimeout(tick, 100);
+        };
+        const start = window.setTimeout(tick, 60);
+        return () => window.clearTimeout(start);
+    }, []);
+
     const {
         search: searchSemantic,
         reset: resetSemantic,
@@ -155,6 +186,13 @@ export const LandingPage: React.FC = () => {
         [filters]
     );
 
+    // El título "Inmuebles Destacados" es la portada: en cuanto el visitante
+    // filtra (sin contar venta/alquiler) deja de mostrarse para no estorbar.
+    const hasFiltersBeyondOperacion = React.useMemo(
+        () => Object.entries(filters ?? {}).some(([key, value]) => key !== 'operacion' && String(value ?? '').trim() !== ''),
+        [filters]
+    );
+
     // Si el texto desaparece (atrás/adelante del navegador), la píldora vuelve a filtros.
     React.useEffect(() => {
         if (!query.trim()) setSmartMode(false);
@@ -185,7 +223,12 @@ export const LandingPage: React.FC = () => {
         setIgnoredBudget(null);
     };
 
-    const handleSearch = (newFilters: Record<string, string>, searchQuery?: string) => {        const texto = (searchQuery ?? '').trim();
+    const handleSearch = (
+        newFilters: Record<string, string>,
+        searchQuery?: string,
+        options?: { scrollToResults?: boolean }
+    ) => {
+        const texto = (searchQuery ?? '').trim();
         // Modos excluyentes: si hay texto, los filtros no se aplican ni viajan en la URL.
         const cleanFilters = texto
             ? {}
@@ -202,9 +245,13 @@ export const LandingPage: React.FC = () => {
         });
         if (texto) params.set('q', texto);
         setSearchParams(params);
-        setTimeout(() => {
-            document.getElementById('inmuebles-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+        // Solo se baja a los resultados al enviar una búsqueda. Al cambiar de
+        // modo (texto ↔ filtros) la vista se queda donde está.
+        if (options?.scrollToResults !== false) {
+            setTimeout(() => {
+                document.getElementById('inmuebles-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
     };
 
     /** Cambiar de operación cambia la moneda: el precio anterior se descarta. */
@@ -232,29 +279,40 @@ export const LandingPage: React.FC = () => {
                     focusSmartToken={focusSmartToken}
                 />
 
-                <section id="inmuebles-grid" className="max-w-6xl mx-auto px-6 md:px-12 pt-2 pb-20 scroll-mt-[132px] md:scroll-mt-[152px]">
+                <section
+                    id="inmuebles-grid"
+                    onClickCapture={(e) => {
+                        // Se guarda el punto exacto antes de abrir la ficha para
+                        // poder volver a él cuando el visitante regrese.
+                        const link = (e.target as HTMLElement).closest('a[href^="/inmueble/"]');
+                        if (link) sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+                    }}
+                    className="max-w-6xl mx-auto px-6 md:px-12 pt-2 pb-20 scroll-mt-[132px] md:scroll-mt-[152px]"
+                >
 
-                    {/* Header */}
-                    <div className="mb-10 md:mb-16">
-                        {showingSemantic ? (
-                            <>
-                                <h2 className="text-4xl md:text-6xl font-serif font-black text-ink mb-3">
-                                    Resultados de tu <span className="italic font-light text-accent">búsqueda</span>
+                    {/* Header: portada solo sin filtros; la búsqueda muestra su resumen. */}
+                    {(showingSemantic || !hasFiltersBeyondOperacion) && (
+                        <div className="mb-10 md:mb-16">
+                            {showingSemantic ? (
+                                <>
+                                    <h2 className="text-4xl md:text-6xl font-serif font-black text-ink mb-3">
+                                        Resultados de tu <span className="italic font-light text-accent">búsqueda</span>
+                                    </h2>
+                                    <p className="text-muted text-base md:text-lg max-w-2xl leading-relaxed break-words">
+                                        «{query}»
+                                    </p>
+                                </>
+                            ) : (
+                                <h2 className="text-5xl md:text-6xl font-serif font-black text-ink mb-4">
+                                    {esAlquiler ? (
+                                        <>Alquileres <span className="italic font-light text-accent">Disponibles</span></>
+                                    ) : (
+                                        <>Inmuebles <span className="italic font-light text-accent">Destacados</span></>
+                                    )}
                                 </h2>
-                                <p className="text-muted text-base md:text-lg max-w-2xl leading-relaxed break-words">
-                                    «{query}»
-                                </p>
-                            </>
-                        ) : (
-                            <h2 className="text-5xl md:text-6xl font-serif font-black text-ink mb-4">
-                                {esAlquiler ? (
-                                    <>Alquileres <span className="italic font-light text-accent">Disponibles</span></>
-                                ) : (
-                                    <>Inmuebles <span className="italic font-light text-accent">Destacados</span></>
-                                )}
-                            </h2>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Estado de la búsqueda semántica */}
                     {showingSemantic && !semanticLoading && semanticData && semanticResults.length > 0 && (
