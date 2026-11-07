@@ -56,7 +56,7 @@ export const FAQ: React.FC = () => {
             <main className="flex-grow pt-12 pb-32 px-8 max-w-7xl mx-auto">
 
                 {/* Header Premium */}
-                <div className="text-center mb-24 space-y-8">
+                <div className="text-center mb-16 space-y-8">
                     <div className="inline-block px-8 py-3 bg-amber-500/5 text-accent rounded-full text-[10px] font-black uppercase tracking-[0.5em] border border-amber-500/10">
                         Centro de Ayuda
                     </div>

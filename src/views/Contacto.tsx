@@ -36,13 +36,13 @@ export const Contacto: React.FC = () => {
             <main className="flex-grow pt-12 pb-32 px-8 max-w-7xl mx-auto">
 
                 {/* Header Premium */}
-                <div className="text-center mb-32 space-y-8">
-                    <h1 className="text-7xl md:text-9xl font-serif font-black leading-[1.03] italic tracking-tighter text-gray-900">
+                <div className="text-center mb-16 space-y-8">
+                    <h1 className="text-6xl md:text-8xl font-serif font-black leading-[1.03] italic tracking-tighter text-gray-900">
                         Hablemos de tu futuro <br />
                         <span className="text-primary-dark not-italic">hogar.</span>
                     </h1>
 
-                    <p className="text-gray-400 text-xl font-medium max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-gray-400 text-lg font-medium max-w-2xl mx-auto leading-relaxed">
                         Nuestro equipo en Bolivia está listo para brindarte una asesoría personalizada, segura y transparente.
                     </p>
                 </div>

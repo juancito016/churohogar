@@ -17,17 +17,17 @@ export const QuienesSomos: React.FC = () => {
             <main className="flex-grow pt-12 pb-32 px-8 max-w-7xl mx-auto">
 
                 {/* Header Premium */}
-                <div className="text-center mb-32 space-y-8">
+                <div className="text-center mb-16 space-y-8">
                     <div className="inline-flex items-center gap-3 bg-red-900/5 text-primary px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.5em] border border-red-900/10">
                         Nuestra Identidad
                     </div>
 
-                    <h1 className="text-7xl md:text-9xl font-serif font-black leading-[1.02] italic tracking-tighter text-gray-900">
+                    <h1 className="text-6xl md:text-8xl font-serif font-black leading-[1.02] italic tracking-tighter text-gray-900">
                         Bienes raíces <br />
                         <span className="text-accent not-italic">con alma</span> boliviana.
                     </h1>
 
-                    <p className="text-gray-400 text-xl font-medium max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-gray-400 text-lg font-medium max-w-2xl mx-auto leading-relaxed">
                         Revolucionando la forma de encontrar hogar en Bolivia con tecnología, transparencia y diseño.
                     </p>
                 </div>
