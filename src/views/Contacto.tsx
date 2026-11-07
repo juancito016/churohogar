@@ -36,8 +36,8 @@ export const Contacto: React.FC = () => {
             <main className="flex-grow pt-12 pb-32 px-8 max-w-7xl mx-auto">
 
                 {/* Header Premium */}
-                <div className="text-center mb-16 space-y-8">
-                    <h1 className="text-6xl md:text-8xl font-serif font-black leading-[1.03] italic tracking-tighter text-gray-900">
+                <div className="text-center mb-10 md:mb-16 space-y-8">
+                    <h1 className="text-6xl md:text-[52px] lg:text-8xl font-serif font-black leading-[1.03] italic tracking-tighter text-gray-900">
                         Hablemos de tu futuro <br />
                         <span className="text-primary-dark not-italic">hogar.</span>
                     </h1>
@@ -50,11 +50,11 @@ export const Contacto: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-24 items-start">
 
                     {/* Formulario Premium */}
-                    <div className="lg:col-span-7 bg-white p-12 md:p-20 rounded-[4rem] shadow-[0_64px_96px_-32px_rgba(0,0,0,0.08)] border border-gray-50 space-y-12 relative overflow-hidden">
+                    <div className="lg:col-span-7 bg-white p-12 md:p-10 lg:p-20 rounded-[4rem] md:rounded-[3rem] lg:rounded-[4rem] shadow-[0_64px_96px_-32px_rgba(0,0,0,0.08)] border border-gray-50 space-y-12 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-40 h-40 bg-red-900/5 rounded-full -translate-y-1/2 translate-x-1/2" />
 
                         <div className="space-y-2">
-                            <h2 className="text-4xl font-serif font-black text-gray-900 tracking-tight">
+                            <h2 className="text-4xl md:text-3xl lg:text-4xl font-serif font-black text-gray-900 tracking-tight">
                                 Envíanos un mensaje
                             </h2>
                             <p className="text-gray-400 font-medium">
@@ -78,7 +78,7 @@ export const Contacto: React.FC = () => {
                                             name="nombre"
                                             value={formData.nombre}
                                             onChange={handleChange}
-                                            className="w-full bg-gray-50 border-none rounded-[1.5rem] py-6 pl-16 pr-8 text-sm font-bold focus:ring-4 focus:ring-red-900/5 transition-all outline-none"
+                                            className="w-full bg-gray-50 border-none rounded-[1.5rem] py-6 md:py-3.5 lg:py-6 pl-16 pr-8 text-sm font-bold focus:ring-4 focus:ring-red-900/5 transition-all outline-none"
                                             placeholder="Tu nombre"
                                         />
                                     </div>
@@ -96,7 +96,7 @@ export const Contacto: React.FC = () => {
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
-                                            className="w-full bg-gray-50 border-none rounded-[1.5rem] py-6 pl-16 pr-8 text-sm font-bold focus:ring-4 focus:ring-red-900/5 transition-all outline-none"
+                                            className="w-full bg-gray-50 border-none rounded-[1.5rem] py-6 md:py-3.5 lg:py-6 pl-16 pr-8 text-sm font-bold focus:ring-4 focus:ring-red-900/5 transition-all outline-none"
                                             placeholder="correo@ejemplo.com"
                                         />
                                     </div>
@@ -114,14 +114,14 @@ export const Contacto: React.FC = () => {
                                     name="mensaje"
                                     value={formData.mensaje}
                                     onChange={handleChange}
-                                    className="w-full bg-gray-50 border-none rounded-[2rem] p-8 text-sm font-bold focus:ring-4 focus:ring-red-900/5 transition-all outline-none resize-none"
+                                    className="w-full bg-gray-50 border-none rounded-[2rem] p-8 md:p-5 lg:p-8 text-sm font-bold focus:ring-4 focus:ring-red-900/5 transition-all outline-none resize-none"
                                     placeholder="Cuéntanos qué necesitas..."
                                 />
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full bg-primary hover:bg-black text-white font-black py-8 rounded-[2rem] shadow-2xl shadow-red-900/20 uppercase tracking-[0.3em] transition-all active:scale-95 text-xs flex items-center justify-center gap-4 group"
+                                className="w-full bg-primary hover:bg-black text-white font-black py-8 md:py-5 lg:py-8 rounded-[2rem] shadow-2xl shadow-red-900/20 uppercase tracking-[0.3em] transition-all active:scale-95 text-xs flex items-center justify-center gap-4 group"
                             >
                                 Enviar Solicitud
                                 <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
@@ -134,7 +134,7 @@ export const Contacto: React.FC = () => {
                     <div className="lg:col-span-5 space-y-10">
 
                         <div className="space-y-6">
-                            <h2 className="text-4xl font-serif font-black italic tracking-tighter">
+                            <h2 className="text-4xl md:text-3xl lg:text-4xl font-serif font-black italic tracking-tighter">
                                 Medios directos
                             </h2>
                             <p className="text-gray-400 text-lg font-medium leading-relaxed">

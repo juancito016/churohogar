@@ -56,12 +56,12 @@ export const FAQ: React.FC = () => {
             <main className="flex-grow pt-12 pb-32 px-8 max-w-7xl mx-auto">
 
                 {/* Header Premium */}
-                <div className="text-center mb-16 space-y-8">
+                <div className="text-center mb-10 md:mb-16 space-y-8">
                     <div className="inline-block px-8 py-3 bg-amber-500/5 text-accent rounded-full text-[10px] font-black uppercase tracking-[0.5em] border border-amber-500/10">
                         Centro de Ayuda
                     </div>
 
-                    <h1 className="text-6xl md:text-8xl font-serif font-black italic tracking-tighter leading-[1.03] text-gray-900">
+                    <h1 className="text-6xl md:text-[52px] lg:text-8xl font-serif font-black italic tracking-tighter leading-[1.03] text-gray-900">
                         Guía legal <br />
                         <span className="text-primary-dark not-italic">y técnica</span>
                     </h1>
@@ -74,7 +74,7 @@ export const FAQ: React.FC = () => {
                 {/* FAQ Sections */}
                 <div className="space-y-16">
                     {faqs.map((section, sectionIndex) => (
-                        <div key={sectionIndex} className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-12">
+                        <div key={sectionIndex} className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-12 md:p-8 lg:p-12">
 
                             <h2 className="text-sm font-black uppercase tracking-[0.3em] text-primary mb-10">
                                 {section.category}
@@ -124,10 +124,10 @@ export const FAQ: React.FC = () => {
                 </div>
 
                 {/* CTA Final 
-                <div className="mt-24 bg-ink-strong p-16 rounded-[3rem] text-center text-white relative overflow-hidden shadow-2xl">
+                <div className="mt-24 bg-ink-strong p-16 md:p-10 lg:p-16 rounded-[3rem] text-center text-white relative overflow-hidden shadow-2xl">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-red-900/10 rounded-full blur-[100px]" />
 
-                    <h3 className="text-3xl font-serif font-black mb-6 tracking-tight">
+                    <h3 className="text-3xl md:text-2xl lg:text-3xl font-serif font-black mb-6 tracking-tight">
                         ¿Tienes una situación especial?
                     </h3>
 
@@ -137,7 +137,7 @@ export const FAQ: React.FC = () => {
 
                     <a
                         href="/contacto"
-                        className="inline-block bg-primary hover:bg-black text-white px-12 py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs transition-all active:scale-95 shadow-xl shadow-red-900/20"
+                        className="inline-block bg-primary hover:bg-black text-white px-12 py-5 md:px-8 md:py-4 lg:px-12 lg:py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs transition-all active:scale-95 shadow-xl shadow-red-900/20"
                     >
                         Quiero Asesoría Legal
                     </a>

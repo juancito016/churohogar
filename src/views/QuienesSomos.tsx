@@ -17,12 +17,12 @@ export const QuienesSomos: React.FC = () => {
             <main className="flex-grow pt-12 pb-32 px-8 max-w-7xl mx-auto">
 
                 {/* Header Premium */}
-                <div className="text-center mb-16 space-y-8">
+                <div className="text-center mb-10 md:mb-16 space-y-8">
                     <div className="inline-flex items-center gap-3 bg-red-900/5 text-primary px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.5em] border border-red-900/10">
                         Nuestra Identidad
                     </div>
 
-                    <h1 className="text-6xl md:text-8xl font-serif font-black leading-[1.02] italic tracking-tighter text-gray-900">
+                    <h1 className="text-6xl md:text-[52px] lg:text-8xl font-serif font-black leading-[1.02] italic tracking-tighter text-gray-900">
                         Bienes raíces <br />
                         <span className="text-accent not-italic">con alma</span> boliviana.
                     </h1>
@@ -36,13 +36,13 @@ export const QuienesSomos: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-16 text-left mb-40">
 
                     {/* Misión */}
-                    <div className="bg-white p-16 rounded-[4rem] border border-gray-100 shadow-sm space-y-10 group hover:shadow-2xl transition-all duration-700">
+                    <div className="bg-white p-16 md:p-10 lg:p-16 rounded-[4rem] border border-gray-100 shadow-sm space-y-10 group hover:shadow-2xl transition-all duration-700">
                         <div className="w-16 h-16 bg-red-900/5 rounded-[1.5rem] flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                             <Compass size={32} />
                         </div>
 
                         <div className="space-y-6">
-                            <h2 className="text-3xl font-serif font-black text-gray-900">
+                            <h2 className="text-3xl md:text-2xl lg:text-3xl font-serif font-black text-gray-900">
                                 Nuestra Misión
                             </h2>
 
@@ -55,7 +55,7 @@ export const QuienesSomos: React.FC = () => {
                     </div>
 
                     {/* Visión */}
-                    <div className="bg-ink-strong p-16 rounded-[4rem] shadow-2xl space-y-10 text-white relative overflow-hidden group">
+                    <div className="bg-ink-strong p-16 md:p-10 lg:p-16 rounded-[4rem] shadow-2xl space-y-10 text-white relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-red-900/10 rounded-full blur-[80px]" />
 
                         <div className="w-16 h-16 bg-white/10 rounded-[1.5rem] flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
@@ -63,7 +63,7 @@ export const QuienesSomos: React.FC = () => {
                         </div>
 
                         <div className="space-y-6 relative z-10">
-                            <h2 className="text-3xl font-serif font-black">
+                            <h2 className="text-3xl md:text-2xl lg:text-3xl font-serif font-black">
                                 Nuestra Visión
                             </h2>
 
@@ -77,8 +77,8 @@ export const QuienesSomos: React.FC = () => {
                 {/* Valores */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
 
-                    <div className="p-10 rounded-[3rem] hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gray-50 group text-center">
-                        <div className="w-20 h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 group-hover:bg-crema transition-colors">
+                    <div className="p-10 md:p-8 lg:p-10 rounded-[3rem] hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gray-50 group text-center">
+                        <div className="w-20 h-20 md:w-16 md:h-16 lg:w-20 lg:h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 group-hover:bg-crema transition-colors">
                             <CheckCircle className="text-accent" size={36} />
                         </div>
                         <h3 className="text-xl font-black mb-4 tracking-widest uppercase text-xs">
@@ -89,8 +89,8 @@ export const QuienesSomos: React.FC = () => {
                         </p>
                     </div>
 
-                    <div className="p-10 rounded-[3rem] hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gray-50 group text-center">
-                        <div className="w-20 h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 group-hover:bg-crema transition-colors">
+                    <div className="p-10 md:p-8 lg:p-10 rounded-[3rem] hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gray-50 group text-center">
+                        <div className="w-20 h-20 md:w-16 md:h-16 lg:w-20 lg:h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 group-hover:bg-crema transition-colors">
                             <Zap className="text-accent" size={36} />
                         </div>
                         <h3 className="text-xl font-black mb-4 tracking-widest uppercase text-xs">
@@ -101,8 +101,8 @@ export const QuienesSomos: React.FC = () => {
                         </p>
                     </div>
 
-                    <div className="p-10 rounded-[3rem] hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gray-50 group text-center">
-                        <div className="w-20 h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 group-hover:bg-crema transition-colors">
+                    <div className="p-10 md:p-8 lg:p-10 rounded-[3rem] hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gray-50 group text-center">
+                        <div className="w-20 h-20 md:w-16 md:h-16 lg:w-20 lg:h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 group-hover:bg-crema transition-colors">
                             <Compass className="text-accent" size={36} />
                         </div>
                         <h3 className="text-xl font-black mb-4 tracking-widest uppercase text-xs">
