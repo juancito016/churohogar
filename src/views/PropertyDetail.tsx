@@ -386,7 +386,7 @@ export const PropertyDetail: React.FC = () => {
                 )}
             </div>
 
-            <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 flex-1">
+            <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex-1">
 
                 {/* Header Título & Precio */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
@@ -416,10 +416,10 @@ export const PropertyDetail: React.FC = () => {
                                 </span>
                             )}
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-extrabold text-primary-dark mb-2 leading-tight">
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-primary-dark mb-2 leading-tight">
                             {inmueble.titulo}
                         </h1>
-                        <p className="text-lg text-muted flex items-center gap-2 font-medium">
+                        <p className="text-base text-muted flex items-center gap-2 font-medium">
                             <FaMapMarkerAlt className="text-accent shrink-0" /> {ubicacionCompleta}
                         </p>
                         {inmueble.publicado_at && (
@@ -432,7 +432,7 @@ export const PropertyDetail: React.FC = () => {
                     </div>
                     <div className="text-left md:text-right flex flex-col items-start md:items-end gap-4">
                         <div>
-                            <div className="text-4xl md:text-5xl font-black text-primary-dark">
+                            <div className="text-3xl md:text-4xl font-black text-primary-dark">
                                 {formatearPrecio(inmueble.precio, inmueble.moneda)}
                                 {esAlquiler && <span className="text-lg md:text-xl font-bold text-muted"> /mes</span>}
                             </div>
@@ -450,104 +450,105 @@ export const PropertyDetail: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Galería Fotográfica con swipe */}
-                <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 rounded-3xl shadow-lg border border-white/40 mb-10">
-                    <div
-                        className="relative rounded-2xl overflow-hidden bg-sand group select-none"
-                        onTouchStart={onTouchStart}
-                        onTouchEnd={onTouchEnd}
-                    >
-                        {total > 0 ? (
-                            <img
-                                src={getImageUrl(imagenes[activeIndex]?.url_storage)}
-                                alt={`${inmueble.titulo} - foto ${activeIndex + 1}`}
-                                className="w-full aspect-[4/3] md:aspect-[16/9] object-cover"
-                            />
-                        ) : (
-                            <div className="w-full aspect-[4/3] md:aspect-[16/9] flex items-center justify-center text-muted font-bold">Sin Imagen</div>
-                        )}
-
-                        {vendido && (
-                            <div className="absolute top-4 left-4 z-10 bg-red-600 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
-                                Vendido
-                            </div>
-                        )}
-
-                        {alquilado && (
-                            <div className="absolute top-4 left-4 z-10 bg-red-600 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
-                                Alquilado
-                            </div>
-                        )}
-
-                        {vencido && (
-                            <div className="absolute top-4 left-4 z-10 bg-amber-500 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
-                                Publicación vencida
-                            </div>
-                        )}
-
-                        {total > 1 && (
-                            <div className="absolute top-4 right-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
-                                {activeIndex + 1} / {total}
-                            </div>
-                        )}
-
-                        {total > 1 && (
-                            <>
-                                <button
-                                    onClick={() => goTo(activeIndex - 1)}
-                                    aria-label="Foto anterior"
-                                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/85 hover:bg-white text-primary-dark p-2.5 rounded-full shadow-md transition md:opacity-0 md:group-hover:opacity-100"
-                                >
-                                    <FaChevronLeft size={16} />
-                                </button>
-                                <button
-                                    onClick={() => goTo(activeIndex + 1)}
-                                    aria-label="Foto siguiente"
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/85 hover:bg-white text-primary-dark p-2.5 rounded-full shadow-md transition md:opacity-0 md:group-hover:opacity-100"
-                                >
-                                    <FaChevronRight size={16} />
-                                </button>
-                            </>
-                        )}
-
-                        {total > 0 && (
-                            <button
-                                onClick={() => setLightboxOpen(true)}
-                                aria-label="Ver foto en pantalla completa"
-                                className="absolute bottom-3 right-3 bg-black/60 hover:bg-black text-white p-2.5 rounded-full backdrop-blur-sm transition"
+                {/* Contenido en dos columnas: galería y datos a la izquierda, contacto a la derecha */}
+                <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_360px] gap-6 lg:gap-8 items-start">
+                    {/* Columna izquierda: galería y datos del inmueble */}
+                    <div className="min-w-0 space-y-8">
+                        {/* Galería Fotográfica con swipe */}
+                        <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 rounded-3xl shadow-lg border border-white/40">
+                            <div
+                                className="relative rounded-2xl overflow-hidden bg-sand group select-none"
+                                onTouchStart={onTouchStart}
+                                onTouchEnd={onTouchEnd}
                             >
-                                <FaExpandArrowsAlt size={14} />
-                            </button>
-                        )}
-                    </div>
+                                {total > 0 ? (
+                                    <img
+                                        src={getImageUrl(imagenes[activeIndex]?.url_storage)}
+                                        alt={`${inmueble.titulo} - foto ${activeIndex + 1}`}
+                                        className="w-full h-[260px] sm:h-[340px] lg:h-[380px] xl:h-[460px] object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-[260px] sm:h-[340px] lg:h-[380px] xl:h-[460px] flex items-center justify-center text-muted font-bold">Sin Imagen</div>
+                                )}
 
-                    {/* Miniaturas */}
-                    {total > 1 && (
-                        <div className="flex gap-3 mt-4 overflow-x-auto pb-2 snap-x">
-                            {imagenes.map((img, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => goTo(idx)}
-                                    aria-label={`Ir a la foto ${idx + 1}`}
-                                    className={`h-20 min-w-[100px] lg:w-28 lg:h-24 snap-center rounded-xl overflow-hidden cursor-pointer border-4 transition-all ${activeIndex === idx ? 'border-accent scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                                >
-                                    <img src={getImageUrl(img.url_storage)} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-cover" />
-                                </button>
-                            ))}
+                                {vendido && (
+                                    <div className="absolute top-4 left-4 z-10 bg-red-600 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
+                                        Vendido
+                                    </div>
+                                )}
+
+                                {alquilado && (
+                                    <div className="absolute top-4 left-4 z-10 bg-red-600 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
+                                        Alquilado
+                                    </div>
+                                )}
+
+                                {vencido && (
+                                    <div className="absolute top-4 left-4 z-10 bg-amber-500 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
+                                        Publicación vencida
+                                    </div>
+                                )}
+
+                                {total > 1 && (
+                                    <div className="absolute top-4 right-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                        {activeIndex + 1} / {total}
+                                    </div>
+                                )}
+
+                                {total > 1 && (
+                                    <>
+                                        <button
+                                            onClick={() => goTo(activeIndex - 1)}
+                                            aria-label="Foto anterior"
+                                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/85 hover:bg-white text-primary-dark p-2.5 rounded-full shadow-md transition md:opacity-0 md:group-hover:opacity-100"
+                                        >
+                                            <FaChevronLeft size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => goTo(activeIndex + 1)}
+                                            aria-label="Foto siguiente"
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/85 hover:bg-white text-primary-dark p-2.5 rounded-full shadow-md transition md:opacity-0 md:group-hover:opacity-100"
+                                        >
+                                            <FaChevronRight size={16} />
+                                        </button>
+                                    </>
+                                )}
+
+                                {total > 0 && (
+                                    <button
+                                        onClick={() => setLightboxOpen(true)}
+                                        aria-label="Ver foto en pantalla completa"
+                                        className="absolute bottom-3 right-3 bg-black/60 hover:bg-black text-white p-2.5 rounded-full backdrop-blur-sm transition"
+                                    >
+                                        <FaExpandArrowsAlt size={14} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Miniaturas */}
+                            {total > 1 && (
+                                <div className="flex gap-3 mt-4 overflow-x-auto pb-2 snap-x">
+                                    {imagenes.map((img, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => goTo(idx)}
+                                            aria-label={`Ir a la foto ${idx + 1}`}
+                                            className={`h-20 w-20 shrink-0 sm:h-24 sm:w-24 snap-center rounded-xl overflow-hidden cursor-pointer border-4 transition-all ${activeIndex === idx ? 'border-accent scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                        >
+                                            <img src={getImageUrl(img.url_storage)} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-cover" />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
 
-                {/* Contenido Secundario */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2 space-y-8">
                         {/* Características */}
                         {stats.length > 0 && (
                             <div className={`grid grid-cols-2 ${stats.length >= 4 ? 'sm:grid-cols-4' : stats.length === 3 ? 'sm:grid-cols-3' : ''} gap-4`}>
                                 {stats.map((s, i) => (
-                                    <div key={i} className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-md border border-white/40 flex flex-col items-center justify-center text-center">
-                                        <s.icon className="text-4xl text-accent mb-3" />
-                                        <span className="text-3xl font-black text-primary-dark">{s.value}</span>
+                                    <div key={i} className="bg-white/70 backdrop-blur-sm p-5 rounded-2xl shadow-md border border-white/40 flex flex-col items-center justify-center text-center">
+                                        <s.icon className="text-3xl text-accent mb-3" />
+                                        <span className="text-2xl font-black text-primary-dark">{s.value}</span>
                                         <span className="text-xs text-muted font-bold uppercase tracking-wider mt-1">{s.label}</span>
                                     </div>
                                 ))}
@@ -570,7 +571,7 @@ export const PropertyDetail: React.FC = () => {
 
                         {/* CTA móvil (antes de la descripción) */}
                         {noDisponible ? (
-                            <div className="md:hidden w-full bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center text-sm font-bold text-amber-900">
+                            <div className="lg:hidden w-full bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center text-sm font-bold text-amber-900">
                                 {vendido
                                     ? 'Este inmueble ya se vendió.'
                                     : alquilado
@@ -580,7 +581,7 @@ export const PropertyDetail: React.FC = () => {
                         ) : (
                             <button
                                 onClick={contactarWhatsapp}
-                                className="md:hidden w-full bg-accent-strong hover:bg-black text-white font-black py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-lg text-lg"
+                                className="lg:hidden w-full bg-accent-strong hover:bg-black text-white font-black py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-lg text-lg"
                             >
                                 <FaWhatsapp size={26} /> Consultar por WhatsApp
                             </button>
@@ -595,9 +596,9 @@ export const PropertyDetail: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Columna de Contacto Estilo Sidebar */}
-                    <div className="space-y-6">
-                        <div className="hidden md:block bg-primary-dark p-8 rounded-3xl shadow-xl text-white sticky top-24">
+                    {/* Columna derecha: contacto y ubicación */}
+                    <aside className="space-y-6">
+                        <div className="hidden lg:block bg-primary-dark p-8 rounded-3xl shadow-xl text-white sticky top-24">
                             <h3 className="text-2xl font-bold mb-2">¿Te interesa?</h3>
                             <p className="text-white/80 mb-8 font-medium">Contáctanos directamente.</p>
 
@@ -612,7 +613,7 @@ export const PropertyDetail: React.FC = () => {
                             ) : (
                                 <button
                                     onClick={contactarWhatsapp}
-                                    className="w-full bg-accent-strong hover:bg-black text-white font-black py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-transform transform hover:-translate-y-1 shadow-lg text-lg"
+                                    className="w-full bg-accent-strong hover:bg-black text-white font-black py-4 px-5 rounded-2xl flex items-center justify-center gap-2.5 transition-transform transform hover:-translate-y-1 shadow-lg text-base whitespace-nowrap"
                                 >
                                     <FaWhatsapp size={28} className="text-white" />
                                     Consultar por WhatsApp
@@ -667,7 +668,7 @@ export const PropertyDetail: React.FC = () => {
                                 )}
                             </div>
                         </div>
-                    </div>
+                    </aside>
                 </div>
 
                 {/* Propiedades cercanas (misma operación; nunca mezcla venta y alquiler) */}

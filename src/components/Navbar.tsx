@@ -32,12 +32,12 @@ export const Navbar: React.FC = () => {
     return (
         <>
             {/* Placeholder to prevent layout shift when header becomes fixed */}
-            <div className="h-[104px] md:h-[124px] w-full shrink-0"></div>
+            <div className="h-[76px] md:h-[88px] w-full shrink-0"></div>
             <header
                 className={`fixed w-full top-0 z-50 transition-all duration-500 ease-in-out ${showSolidBackground
                         ? 'bg-crema/90 backdrop-blur-md shadow-md'
                         : 'bg-transparent'
-                    } ${isScrolled ? 'py-2' : 'py-6'}`}
+                    } ${isScrolled ? 'py-2' : 'py-4'}`}
             >
             <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
 
@@ -47,11 +47,11 @@ export const Navbar: React.FC = () => {
                     onDoubleClick={() => navigate('/admin')}
                     title="Doble clic para acceso interno"
                 >
-                    <img src={logoUrl} alt="Churo Hogar Logo" className="h-14 md:h-19 w-auto object-contain mb-1" />
+                    <img src={logoUrl} alt="Churo Hogar Logo" className="h-11 md:h-14 w-auto object-contain" />
                 </div>
 
                 {/* Desktop Nav */}
-                <nav className="hidden lg:flex gap-10 items-center">
+                <nav className="hidden lg:flex gap-8 items-center">
                     <NavLink to="/" className={linkClasses}>Inicio</NavLink>
                 
                     <NavLink to="/guia" className={linkClasses}>Guía</NavLink>

@@ -7,7 +7,6 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../services/supabaseClient';
 import { useLocationManager } from '../hooks/useLocationManager';
 import {
     FaMapMarkerAlt, FaMap, FaChevronDown,
@@ -63,8 +62,6 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
     );
     const [selectedDepto, setSelectedDepto] = useState(initialFilters.departamento || '');
     const [selectedCiudad, setSelectedCiudad] = useState(initialFilters.ciudad || '');
-    const [selectedBarrioId, setSelectedBarrioId] = useState(initialFilters.barrio_id || '');
-    const [barrioSearch, setBarrioSearch] = useState(initialFilters.barrio_search || '');
     const [precioMin, setPrecioMin] = useState(initialFilters.precio_min || '');
     const [precioMax, setPrecioMax] = useState(initialFilters.precio_max || '');
     const [showLocationPicker, setShowLocationPicker] = useState(false);
@@ -73,8 +70,6 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
     // En escritorio la operación es un desplegable; en móvil, dos píldoras.
     const [showOperacionPicker, setShowOperacionPicker] = useState(false);
     const [locationStep, setLocationStep] = useState<'deptos' | 'ciudades'>('deptos');
-    const [barrioSuggestions, setBarrioSuggestions] = useState<any[]>([]);
-    const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
     // Búsqueda inteligente: si hay texto en la URL, la píldora arranca en ese modo.
     const [query, setQuery] = useState(initialQuery);
@@ -162,30 +157,6 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
         fetchDepartamentos();
     }, [fetchDepartamentos]);
 
-    useEffect(() => {
-        if (!selectedCiudad) {
-            setBarrioSuggestions([]);
-            return;
-        }
-        const handler = setTimeout(async () => {
-            const searchTerm = barrioSearch.trim();
-            if (searchTerm.length > 2) {
-                setIsLoadingSuggestions(true);
-                const { data } = await supabase
-                    .from('barrios')
-                    .select('id, nombre')
-                    .eq('ciudad_id', selectedCiudad)
-                    .ilike('nombre', `%${searchTerm}%`)
-                    .limit(8);
-                setBarrioSuggestions(data || []);
-                setIsLoadingSuggestions(false);
-            } else {
-                setBarrioSuggestions([]);
-            }
-        }, 300);
-        return () => clearTimeout(handler);
-    }, [barrioSearch, selectedCiudad]);
-
     const tipoPropiedadOptions = [
         { value: '', label: '¿Qué buscas?' },
         { value: 'Casa', label: 'Casa', icon: FaHome },
@@ -212,8 +183,6 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
     const handleSelectDepto = async (depto: any) => {
         setSelectedDepto(depto.id); // Guardamos oficialmente el departamento enseguida
         setSelectedCiudad(''); // Reseteamos la ciudad al cambiar de departamento
-        setSelectedBarrioId('');
-        setBarrioSearch('');
         // Mostrar inmediatamente el paso de ciudades (UX perceptual)
         setLocationStep('ciudades');
         // Limpiar y cargar ciudades desde el hook (usa select reducido en columnas)
@@ -280,8 +249,6 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
         operacion,
         departamento: selectedDepto,
         ciudad: selectedCiudad,
-        barrio_id: selectedBarrioId,
-        barrio_search: barrioSearch,
         precio_min: precioMin,
         precio_max: precioMax,
     });
@@ -291,8 +258,6 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
         setOperacion('Venta');
         setSelectedDepto('');
         setSelectedCiudad('');
-        setSelectedBarrioId('');
-        setBarrioSearch('');
         setPrecioMin('');
         setPrecioMax('');
         setShowLocationPicker(false);
@@ -398,7 +363,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
 
             {/* ========== ACTIVADOR DE BÚSQUEDA INTELIGENTE ========== */}
             {smartSearchEnabled && (
-                <div className="max-w-[940px] mx-auto mt-6 md:mt-2 relative z-20">
+                <div className="max-w-[820px] mx-auto mt-6 md:mt-2 relative z-20">
                     <div className="flex items-center justify-between gap-3 px-1 mb-2 md:mb-3">
                         <button
                             type="button"
@@ -446,7 +411,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                     md:max-h-none md:opacity-100 md:mt-0 md:overflow-visible
                 `}
             >
-                <div id="filtro-busqueda" className="max-w-[940px] mx-auto relative z-30">
+                <div id="filtro-busqueda" className="max-w-[820px] mx-auto relative z-30">
                     <form onSubmit={handleSubmit} className="bg-white/85 backdrop-blur-xl p-2.5 md:p-3.5 rounded-[38px] md:rounded-[50px] shadow-ideal-pill border border-white/70">
                         {/* Búsqueda inteligente: ocupa la píldora completa y esconde los filtros */}
                         {smartSearch && (
@@ -586,31 +551,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                                 )}
                             </div>
 
-                            {/* 3. Barrio */}
-                            <div className="w-full xl:flex-1 xl:w-auto xl:min-w-0 relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-accent"><FaMapMarkerAlt size={13} /></div>
-                                <input
-                                    type="text"
-                                    aria-label="Barrio"
-                                    placeholder={selectedCiudad ? "Barrio (opcional)" : "Primero ciudad"}
-                                    value={barrioSearch}
-                                    onChange={(e) => { setBarrioSearch(e.target.value); setSelectedBarrioId(''); }}
-                                    disabled={!selectedCiudad}
-                                    className="w-full pl-10 xl:pl-9 pr-4 xl:pr-3 py-3.5 bg-crema/90 text-ink-soft font-bold text-[13.5px] md:text-[14px] xl:text-[13px] rounded-full focus:outline-none placeholder-gray-400"
-                                />
-                                {isLoadingSuggestions && <div className="absolute right-4 top-1/2 -translate-y-1/2"><FaSpinner className="animate-spin text-accent" size={12} /></div>}
-                                {barrioSuggestions.length > 0 && selectedCiudad && (
-                                    <ul className="absolute left-0 z-50 w-full bg-white border border-gray-100 mt-2 rounded-2xl shadow-2xl max-h-56 overflow-y-auto p-1 animate-fadeIn">
-                                        {barrioSuggestions.map(b => (
-                                            <li key={b.id} onClick={() => { setSelectedBarrioId(b.id); setBarrioSearch(b.nombre); setBarrioSuggestions([]); }} className="p-2.5 hover:bg-crema rounded-lg cursor-pointer flex items-center gap-2 text-[13px] text-gray-700">
-                                                <FaMapMarkerAlt className="text-accent opacity-60" size={11} /> <span>{b.nombre}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-
-                            {/* 4. Operación: dos píldoras en móvil, un desplegable en escritorio */}
+                            {/* 3. Operación: dos píldoras en móvil, un desplegable en escritorio */}
                             <div className="w-full xl:hidden">
                                 <div role="group" aria-label="Operación" className="w-full bg-crema/90 rounded-full p-1 flex items-center gap-1">
                                     {(['Venta', 'Alquiler'] as const).map((op) => (
@@ -724,7 +665,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                                 )}
                             </div>
 
-                            {/* 5. Botón Buscar */}
+                            {/* 4. Botón Buscar */}
                             <div className="w-full md:col-span-2 xl:col-span-1 xl:w-[15%] xl:flex-none">
                                 <button type="submit" className="w-full bg-primary-dark hover:bg-black text-white font-bold text-[12px] uppercase tracking-widest py-3.5 px-4 rounded-full transition-all duration-200 flex items-center justify-center gap-2 active:scale-95">
                                     Buscar <FaArrowRight size={10} className="opacity-90" />
