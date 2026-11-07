@@ -291,7 +291,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
         setShowLocationPicker(false);
         setShowBudgetPicker(false);
         setShowTipoPropiedadPicker(false);
-        if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+        if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
             setMobileFiltersOpen(true);
         }
         // El texto se conserva por si el visitante vuelve al modo inteligente,
@@ -322,56 +322,68 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
         onSearch({}, texto);
     };
 
-    const openMobileFilters = () => {
-        if (!mobileFiltersOpen) {
-            setMobileFiltersOpen(true);
-            // Scroll suave al formulario después de que se muestre, sin saltar al top
-            setTimeout(() => {
-                filtroContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 150);
+    const toggleMobileFilters = () => {
+        // El mismo botón abre y cierra: pulsarlo de nuevo oculta el panel.
+        if (mobileFiltersOpen) {
+            setMobileFiltersOpen(false);
+            setShowLocationPicker(false);
+            setShowBudgetPicker(false);
+            setShowTipoPropiedadPicker(false);
+            setShowOperacionPicker(false);
+            return;
         }
+        setMobileFiltersOpen(true);
+        // Scroll suave al formulario después de que se muestre, sin saltar al top
+        setTimeout(() => {
+            filtroContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 150);
     };
 
     return (
         <div
-            className="w-full relative overflow-visible pt-6 md:pt-16 pb-6 md:pb-12 px-4 md:px-12 lg:px-24 font-sans"
+            className="w-full relative overflow-visible pt-6 md:pt-3 lg:pt-16 pb-6 md:pb-1 lg:pb-12 px-4 md:px-12 lg:px-24 font-sans"
             style={{ backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
         >
             {/* Contenedor Principal Hero */}
             <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row items-stretch justify-between gap-8 lg:gap-4 relative z-10">
                 {/* LADO IZQUIERDO: Tipografía */}
-                <div className="w-full lg:w-[48%] flex flex-col justify-center text-left z-10 pb-4 lg:pb-0 select-none">
-                    <h1 className="text-[40px] md:text-[84px] lg:text-[102px] font-serif font-black text-primary-dark leading-[1.03] tracking-tighter mb-5">
-                        Tu casa <br />
-                        <span className="italic font-normal text-accent">ideal</span> <br />
-                        en Tarija <br />
+                <div className="w-full lg:w-[48%] flex flex-col justify-center text-left z-10 pb-4 lg:pb-0 select-none px-2.5 lg:px-0">
+                    <h1 className="text-[34px] md:text-[52px] lg:text-[102px] font-serif font-black italic text-gray-900 leading-[1.08] md:leading-[1.03] tracking-tighter mb-3 md:mb-2 lg:mb-5">
+                        Tu casa{' '}<br className="hidden lg:inline" />
+                        <span className="italic font-normal text-accent">ideal</span><br />
+                        en Tarija{' '}<br className="hidden lg:inline" />
                         y Bolivia.
                     </h1>
-                    <p className="text-muted text-base md:text-lg lg:text-[18.5px] max-w-sm leading-relaxed font-medium pl-1">
+                    <p className="text-muted text-base md:text-lg lg:text-[18.5px] max-w-sm leading-relaxed font-medium pl-1 mt-3.5 md:mt-0.5 lg:mt-0">
                         Encuentra el hogar donde tu familia crecerá con tranquilidad
                     </p>
                 </div>
 
                 {/* LADO DERECHO: Tarjeta de fondo + Casa 3D */}
-                <div className="w-full lg:w-[52%] flex items-center justify-center lg:justify-end relative min-h-[280px] md:min-h-[440px] lg:min-h-[480px]">
+                <div className="w-full lg:w-[52%] flex items-center justify-center lg:justify-end relative min-h-[330px] md:min-h-[380px] lg:min-h-[480px]">
                     <div
-                        className="absolute w-[75%] h-[80%] top-[8%] right-[5%] rounded-[48px] border border-white/50 shadow-2xl pointer-events-none z-0"
+                        className="absolute w-[88%] h-[80%] top-[4%] right-[6%] rounded-[40px] -rotate-[4deg] border border-white/35 shadow-[0_10px_26px_-20px_rgba(60,8,17,0.12)] pointer-events-none z-0 md:w-[80%] md:h-[330px] md:top-[3%] md:right-[10%] md:rounded-[36px] md:-rotate-[3deg] md:border-white/35 md:shadow-[0_10px_26px_-20px_rgba(60,8,17,0.12)] lg:w-[75%] lg:h-[80%] lg:top-[8%] lg:right-[5%] lg:rounded-[48px] lg:rotate-0 lg:border-white/50 lg:shadow-2xl"
                         style={{
                             backgroundImage: `url(${fondotarjetaUrl})`,
                             backgroundSize: 'cover',
                             backgroundPosition: '30% 70%',
                             backgroundRepeat: 'no-repeat',
                         }}
-                    ></div>
-                    <div className="relative z-10 w-full max-w-[500px] lg:max-w-[550px] transform translate-x-[8%] md:translate-x-[10%] translate-y-[10%] md:translate-y-[12%] transition-transform duration-500 hover:scale-[1.02]">
+                    >
+                        {/* En móvil/tablet el recorte de la textura queda muy plano: se refuerza con un degradado */}
+                        <div className="absolute inset-0 rounded-[40px] bg-gradient-to-br from-[#FDF7EE] via-[#F6E8DD] to-[#F1DDD3] lg:hidden" />
+                    </div>
+                    <div className="relative z-10 w-full max-w-[500px] transform translate-x-[2%] translate-y-[9%] md:w-[475px] md:max-w-[475px] md:translate-x-[9%] md:translate-y-[12%] lg:w-full lg:max-w-[550px] lg:translate-x-[10%] lg:translate-y-[12%] transition-transform duration-500 hover:scale-[1.02]">
                         <img src={portadaUrl1} alt="Casas exclusivas en Bolivia" className="w-full h-auto object-contain filter drop-shadow-ideal-isometric" />
                     </div>
+                    {/* Sombra de apoyo: la casa "apoya" sobre la tarjeta */}
+                    <div className="absolute bottom-[3%] left-1/2 -translate-x-1/2 w-[60%] h-[30px] bg-black/15 blur-[18px] rounded-full z-[5] pointer-events-none lg:hidden" />
                 </div>
             </div>
 
             {/* ========== ACTIVADOR DE BÚSQUEDA INTELIGENTE ========== */}
             {smartSearchEnabled && (
-                <div className="max-w-[820px] mx-auto mt-6 md:mt-2 relative z-20">
+                <div className="max-w-[820px] mx-auto mt-6 md:mt-2.5 relative z-20">
                     <div className="flex items-center justify-between gap-3 px-1 mb-2 md:mb-3">
                         <button
                             type="button"
@@ -398,13 +410,18 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
             )}
 
             {/* Barra de búsqueda simplificada (solo móvil) */}
-            <div ref={mobileBarRef} className={`md:hidden mt-6 ${smartSearch ? 'hidden' : ''}`}>
+            <div ref={mobileBarRef} className={`lg:hidden mt-6 ${smartSearch ? 'hidden' : ''}`}>
                 <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-md border border-white/50">
-                    <button onClick={openMobileFilters} className="flex-1 flex items-center gap-2 pl-4 min-h-[44px] py-3 text-muted focus:outline-none">
+                    <button onClick={toggleMobileFilters} aria-expanded={mobileFiltersOpen} className="flex-1 flex items-center gap-2 pl-4 min-h-[44px] py-3 text-muted focus:outline-none">
                         <FaSearch className="text-accent" size={16} />
                         <span className="text-sm font-medium">Buscar propiedades...</span>
                     </button>
-                    <button onClick={openMobileFilters} aria-label="Abrir filtros de búsqueda" className="bg-primary-dark hover:bg-black text-white p-3 rounded-full transition-colors">
+                    <button
+                        onClick={toggleMobileFilters}
+                        aria-expanded={mobileFiltersOpen}
+                        aria-label={mobileFiltersOpen ? 'Cerrar filtros de búsqueda' : 'Abrir filtros de búsqueda'}
+                        className="bg-primary-dark hover:bg-black text-white p-3 rounded-full transition-colors"
+                    >
                         <FaSlidersH size={16} />
                     </button>
                 </div>
@@ -416,7 +433,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                 className={`
                     transition-all duration-300 ease-in-out
                     ${mobileFiltersOpen || anyDropdownOpen || smartSearch ? 'max-h-[1000px] opacity-100 mt-1 overflow-visible' : 'max-h-0 opacity-0 mt-0 overflow-hidden'}
-                    md:max-h-none md:opacity-100 md:mt-0 md:overflow-visible
+                    lg:max-h-none lg:opacity-100 lg:mt-0 lg:overflow-visible
                 `}
             >
                 <div id="filtro-busqueda" className="max-w-[820px] mx-auto relative z-30">

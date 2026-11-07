@@ -295,7 +295,7 @@ export const LandingPage: React.FC = () => {
                         <div className="mb-10 md:mb-16">
                             {showingSemantic ? (
                                 <>
-                                    <h2 className="text-4xl md:text-6xl font-serif font-black text-ink mb-3">
+                                    <h2 className="text-3xl md:text-[34px] lg:text-6xl font-serif font-black italic text-ink mb-3">
                                         Resultados de tu <span className="italic font-light text-accent">búsqueda</span>
                                     </h2>
                                     <p className="text-muted text-base md:text-lg max-w-2xl leading-relaxed break-words">
@@ -303,7 +303,7 @@ export const LandingPage: React.FC = () => {
                                     </p>
                                 </>
                             ) : (
-                                <h2 className="text-5xl md:text-6xl font-serif font-black text-ink mb-4">
+                                <h2 className="text-3xl md:text-[34px] lg:text-6xl font-serif font-black italic text-ink mb-4">
                                     {esAlquiler ? (
                                         <>Alquileres <span className="italic font-light text-accent">Disponibles</span></>
                                     ) : (
