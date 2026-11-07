@@ -1,15 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import {
     FaWhatsapp, FaBed, FaBath, FaRulerCombined, FaMapMarkerAlt, FaExpandArrowsAlt,
-    FaShareAlt, FaChevronLeft, FaChevronRight, FaTimes, FaCheckCircle
+    FaShareAlt, FaChevronLeft, FaChevronRight, FaTimes, FaCheckCircle, FaArrowLeft
 } from 'react-icons/fa';
 import { getImageUrl } from '../utils/helpers';
 import { Footer } from '../components/Footer';
 import { useSimilarInmuebles } from '../hooks/useSimilarInmuebles';
 import { useBusinessConfig } from '../hooks/useBusinessConfig';
-import logoUrl from '../components/imagenes/logo.webp';
 
 type ImagenLite = { url_storage: string; orden?: number | null };
 
@@ -90,12 +89,24 @@ export const PropertyDetail: React.FC = () => {
     const { similares } = useSimilarInmuebles(inmueble?.id);
     const { config } = useBusinessConfig();
     const navigate = useNavigate();
-    const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
+    // La barra superior arranca transparente y toma fondo crema al hacer scroll,
+    // igual que el navbar del inicio.
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     const handleBack = () => {
-        if (location.key !== 'default') {
-            navigate(-1);
+        // La ficha se abre con una carga completa (las tarjetas son <a>), así que
+        // el historial del router no tiene la entrada anterior: se usa el del
+        // navegador para volver al listado con sus filtros y su scroll.
+        if (window.history.length > 1) {
+            window.history.back();
         } else {
             navigate('/');
         }
@@ -344,34 +355,38 @@ export const PropertyDetail: React.FC = () => {
     if (inmueble.superficie_terreno) stats.push({ icon: FaRulerCombined, value: <>{inmueble.superficie_terreno} <span className="text-lg">m²</span></>, label: 'Terreno' });
 
     return (
-        <div className="min-h-screen flex flex-col font-sans bg-crema pb-24 md:pb-0">
+        <div className="min-h-screen flex flex-col font-sans pb-24 md:pb-0">
             {/* Nav Superior */}
-            <div className="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/40 sticky top-0 z-40">
+            <div className={`sticky top-0 z-40 transition-all duration-300 ${scrolled ? 'bg-crema/90 backdrop-blur-md shadow-md border-b border-white/40' : 'bg-transparent border-b border-transparent'}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <button onClick={handleBack} className="text-primary-dark hover:text-black font-black flex items-center gap-2 transition text-xs uppercase tracking-widest min-h-[44px] -ml-2 px-2">
-                        ← Regresar
+                    <button
+                        onClick={handleBack}
+                        aria-label="Volver"
+                        title="Volver"
+                        className="flex items-center justify-center w-11 h-11 -ml-2 rounded-full text-primary-dark hover:bg-primary-dark/5 transition-colors"
+                    >
+                        <FaArrowLeft size={16} />
                     </button>
-                    <nav className="hidden md:flex items-center gap-8">
-                        <Link to="/" className="text-muted hover:text-primary-dark font-bold text-xs uppercase tracking-[0.2em] transition-colors">Inicio</Link>
-                        <Link to="/guia" className="text-muted hover:text-primary-dark font-bold text-xs uppercase tracking-[0.2em] transition-colors">Guía</Link>
-                        <Link to="/contacto" className="text-muted hover:text-primary-dark font-bold text-xs uppercase tracking-[0.2em] transition-colors">Contacto</Link>
-                    </nav>
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center cursor-pointer" onDoubleClick={() => navigate('/admin')}>
-                            <img src={logoUrl} alt="ChuroHogar Logo" className="h-10 w-auto object-contain" />
+                    <div className="flex items-center gap-6 md:gap-8">
+                        <nav className="hidden md:flex items-center gap-8">
+                            <Link to="/" className="text-muted hover:text-primary-dark font-bold text-xs uppercase tracking-[0.2em] transition-colors">Inicio</Link>
+                            <Link to="/guia" className="text-muted hover:text-primary-dark font-bold text-xs uppercase tracking-[0.2em] transition-colors">Guía</Link>
+                            <Link to="/contacto" className="text-muted hover:text-primary-dark font-bold text-xs uppercase tracking-[0.2em] transition-colors">Contacto</Link>
+                        </nav>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setMenuOpen(!menuOpen)}
+                                aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+                                aria-expanded={menuOpen}
+                                className="md:hidden flex items-center justify-center w-11 h-11 -mr-2 text-primary-dark"
+                            >
+                                {menuOpen ? (
+                                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                ) : (
+                                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                                )}
+                            </button>
                         </div>
-                        <button
-                            onClick={() => setMenuOpen(!menuOpen)}
-                            aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
-                            aria-expanded={menuOpen}
-                            className="md:hidden flex items-center justify-center w-11 h-11 -mr-2 text-primary-dark"
-                        >
-                            {menuOpen ? (
-                                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                            ) : (
-                                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-                            )}
-                        </button>
                     </div>
                 </div>
 
