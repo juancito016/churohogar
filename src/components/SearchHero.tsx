@@ -481,9 +481,9 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                             </div>
                         )}
                         {!smartSearch && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:flex xl:flex-row items-center gap-1.5 w-full">
+                        <div className="grid grid-cols-1 md:grid-cols-2 min-[900px]:flex min-[900px]:flex-row items-center gap-1.5 w-full">
                             {/* 1. Tipo de inmueble */}
-                            <div className="w-full xl:flex-1 xl:w-auto xl:min-w-0 relative" ref={tipoPropiedadPickerRef}>
+                            <div className="w-full min-[900px]:flex-1 min-[900px]:w-auto min-[900px]:min-w-0 relative" ref={tipoPropiedadPickerRef}>
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -494,9 +494,9 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                                     }}
                                     aria-haspopup="listbox"
                                     aria-expanded={showTipoPropiedadPicker}
-                                    className="w-full bg-crema/90 hover:bg-crema-dark text-ink-soft font-bold text-[13.5px] md:text-[14px] xl:text-[13px] rounded-full py-3.5 px-5 xl:px-3 flex items-center justify-between transition-colors"
+                                    className="w-full bg-crema/90 hover:bg-crema-dark text-ink-soft font-bold text-[13.5px] md:text-[14px] min-[900px]:text-[13px] rounded-full py-3.5 px-5 min-[900px]:px-3 flex items-center justify-between transition-colors"
                                 >
-                                    <div className="flex items-center gap-2.5 xl:gap-2 truncate">
+                                    <div className="flex items-center gap-2.5 min-[900px]:gap-2 truncate">
                                         {tipoPropiedad === 'Casa' ? <FaHome className="text-accent" size={14} /> :
                                             tipoPropiedad === 'Lote' ? <FaLandmark className="text-accent" size={13} /> :
                                                 tipoPropiedad === 'Departamento' ? <FaBuilding className="text-accent" size={13} /> :
@@ -529,13 +529,13 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                             </div>
 
                             {/* 2. Ubicación */}
-                            <div className="w-full xl:flex-1 xl:w-auto xl:min-w-0 relative" ref={locationPickerRef}>
+                            <div className="w-full min-[900px]:flex-1 min-[900px]:w-auto min-[900px]:min-w-0 relative" ref={locationPickerRef}>
                                 <button
                                     type="button"
                                     onClick={handleOpenLocationPicker}
                                     aria-haspopup="dialog"
                                     aria-expanded={showLocationPicker}
-                                    className="w-full bg-crema/90 hover:bg-crema-dark text-ink-soft font-bold text-[13.5px] md:text-[14px] xl:text-[13px] rounded-full py-3.5 px-5 xl:px-3.5 flex items-center justify-between transition-colors"
+                                    className="w-full bg-crema/90 hover:bg-crema-dark text-ink-soft font-bold text-[13.5px] md:text-[14px] min-[900px]:text-[13px] rounded-full py-3.5 px-5 min-[900px]:px-3.5 flex items-center justify-between transition-colors"
                                 >
                                     <div className="flex items-center gap-2.5 truncate">
                                         <FaMap className="text-accent" size={13} />
@@ -577,7 +577,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                             </div>
 
                             {/* 3. Operación: dos píldoras en móvil, un desplegable en escritorio */}
-                            <div className="w-full xl:hidden">
+                            <div className="w-full min-[900px]:hidden">
                                 <div role="group" aria-label="Operación" className="w-full bg-crema/90 rounded-full p-1 flex items-center gap-1">
                                     {(['Venta', 'Alquiler'] as const).map((op) => (
                                         <button
@@ -595,7 +595,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                                     ))}
                                 </div>
                             </div>
-                            <div className="hidden xl:block xl:flex-none xl:w-[124px] relative" ref={operacionPickerRef}>
+                            <div className="hidden min-[900px]:block min-[900px]:flex-none min-[900px]:w-[124px] relative" ref={operacionPickerRef}>
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -644,7 +644,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                             </div>
 
                             {/* 5. Presupuesto */}
-                            <div className="w-full xl:flex-1 xl:w-auto xl:min-w-0 relative" ref={budgetPickerRef}>
+                            <div className="w-full min-[900px]:flex-1 min-[900px]:w-auto min-[900px]:min-w-0 relative" ref={budgetPickerRef}>
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -655,7 +655,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                                     }}
                                     aria-haspopup="dialog"
                                     aria-expanded={showBudgetPicker}
-                                    className="w-full bg-crema/90 hover:bg-crema-dark text-ink-soft font-bold text-[13.5px] md:text-[14px] xl:text-[13px] rounded-full py-3.5 px-5 xl:px-3.5 flex items-center justify-between transition-all"
+                                    className="w-full bg-crema/90 hover:bg-crema-dark text-ink-soft font-bold text-[13.5px] md:text-[14px] min-[900px]:text-[13px] rounded-full py-3.5 px-5 min-[900px]:px-3.5 flex items-center justify-between transition-all"
                                 >
                                     <div className="flex items-center gap-2.5 truncate">
                                         <FaDollarSign className="text-accent" size={13} />
@@ -691,7 +691,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
                             </div>
 
                             {/* 4. Botón Buscar */}
-                            <div className="w-full md:col-span-2 xl:col-span-1 xl:w-[15%] xl:flex-none">
+                            <div className="w-full md:col-span-2 min-[900px]:col-span-1 min-[900px]:w-[15%] min-[900px]:flex-none">
                                 <button type="submit" className="w-full bg-primary-dark hover:bg-black text-white font-bold text-[12px] uppercase tracking-widest py-3.5 px-4 rounded-full transition-all duration-200 flex items-center justify-center gap-2 active:scale-95">
                                     Buscar <FaArrowRight size={10} className="opacity-90" />
                                 </button>
