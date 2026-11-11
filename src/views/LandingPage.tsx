@@ -5,6 +5,7 @@ import { PropertyCard } from '../components/PropertyCard';
 import { SearchHero } from '../components/SearchHero';
 import { FloatingSearchBar } from '../components/FloatingSearchBar';
 import { SkeletonsGrid } from '../components/Skeletons';
+import { Spinner } from '../components/ui/Spinner';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useSEO } from '../hooks/useSEO';
@@ -55,6 +56,23 @@ const filtersFromParams = (params: URLSearchParams): Record<string, string> => {
     });
     return result;
 };
+
+/** Indicador de carga: aparece sobre los resultados ya visibles sin mover el contenido. */
+const LoadingOverlay: React.FC = () => (
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center pt-2">
+        <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/95 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-ink-soft shadow-lg">
+            <Spinner size={14} label="Buscando inmuebles" />
+            <span aria-hidden="true">Buscando…</span>
+        </span>
+    </div>
+);
+
+/** Primera carga: altura reservada para que al llegar las tarjetas no salte el scroll. */
+const LoadingBlock: React.FC = () => (
+    <div className="flex min-h-[360px] items-center justify-center">
+        <Spinner size={30} label="Buscando inmuebles" />
+    </div>
+);
 
 export const LandingPage: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -223,6 +241,57 @@ export const LandingPage: React.FC = () => {
         setIgnoredBudget(null);
     };
 
+    /**
+     * Al enviar una búsqueda se deja el buscador a la vista: la píldora en
+     * escritorio o la barra compacta en móvil/tablet quedan justo bajo el navbar,
+     * con los resultados empezando debajo. Si ya está colocado no se mueve nada.
+     *
+     * Se mide dos veces porque al cambiar el modo la píldora y el navbar cambian
+     * de alto en el commit de React; si el visitante toca la pantalla entre las
+     * dos medidas, se cancela para no pelearse con su scroll.
+     */
+    const anchorAfterSearch = () => {
+        let cancelled = false;
+        let retryTimer = 0;
+
+        const place = () => {
+            if (cancelled) return;
+            const desktop = window.matchMedia('(min-width: 1024px)').matches;
+            const pill = document.getElementById('filtro-busqueda');
+            const compactBar = document.getElementById('barra-busqueda-movil');
+            // En móvil/tablet manda la barra compacta cuando está visible; si no, la píldora.
+            const target = desktop
+                ? pill
+                : (compactBar && compactBar.offsetParent !== null ? compactBar : pill);
+            const anchor = target ?? document.getElementById('inmuebles-grid');
+            if (!anchor) return;
+
+            const header = document.querySelector('header');
+            const navbarHeight = header?.getBoundingClientRect().height ?? 76;
+            const delta = anchor.getBoundingClientRect().top - (navbarHeight + 12);
+
+            // Solo se mueve hacia abajo si el buscador ha quedado bajo el navbar.
+            if (delta <= 8) return;
+            window.scrollTo({ top: window.scrollY + delta, behavior: 'smooth' });
+        };
+
+        const cancel = () => {
+            cancelled = true;
+            window.clearTimeout(retryTimer);
+            window.removeEventListener('wheel', cancel);
+            window.removeEventListener('touchstart', cancel);
+            window.removeEventListener('keydown', cancel);
+        };
+
+        window.addEventListener('wheel', cancel, { passive: true });
+        window.addEventListener('touchstart', cancel, { passive: true });
+        window.addEventListener('keydown', cancel);
+        window.setTimeout(cancel, 1200);
+
+        place();
+        retryTimer = window.setTimeout(place, 420);
+    };
+
     const handleSearch = (
         newFilters: Record<string, string>,
         searchQuery?: string,
@@ -245,12 +314,11 @@ export const LandingPage: React.FC = () => {
         });
         if (texto) params.set('q', texto);
         setSearchParams(params);
-        // Solo se baja a los resultados al enviar una búsqueda. Al cambiar de
-        // modo (texto ↔ filtros) la vista se queda donde está.
+        // Solo se recoloca la vista al enviar una búsqueda. Al cambiar de modo
+        // (texto ↔ filtros) la vista se queda donde está. El ancla espera al
+        // commit de React y se reajusta una vez con la altura final.
         if (options?.scrollToResults !== false) {
-            setTimeout(() => {
-                document.getElementById('inmuebles-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
+            window.setTimeout(anchorAfterSearch, 60);
         }
     };
 
@@ -268,7 +336,6 @@ export const LandingPage: React.FC = () => {
 
             <main className="flex-grow">
                 <SearchHero
-                    key={JSON.stringify(filters)}
                     onSearch={handleSearch}
                     initialFilters={filters}
                     initialQuery={SEMANTIC_ENABLED ? query : ''}
@@ -292,18 +359,18 @@ export const LandingPage: React.FC = () => {
 
                     {/* Header: portada solo sin filtros; la búsqueda muestra su resumen. */}
                     {(showingSemantic || !hasFiltersBeyondOperacion) && (
-                        <div className="mb-10 md:mb-16">
+                        <div className="mb-8 md:mb-12">
                             {showingSemantic ? (
                                 <>
-                                    <h2 className="text-3xl md:text-[34px] lg:text-6xl font-serif font-black italic text-ink mb-3">
+                                    <h2 className="text-2xl md:text-[30px] lg:text-[40px] font-serif font-black italic text-ink mb-2 leading-[1.1]">
                                         Resultados de tu <span className="italic font-light text-accent">búsqueda</span>
                                     </h2>
-                                    <p className="text-muted text-base md:text-lg max-w-2xl leading-relaxed break-words">
+                                    <p className="text-sm md:text-base text-muted max-w-2xl leading-relaxed break-words">
                                         «{query}»
                                     </p>
                                 </>
                             ) : (
-                                <h2 className="text-3xl md:text-[34px] lg:text-6xl font-serif font-black italic text-ink mb-4">
+                                <h2 className="text-2xl md:text-[30px] lg:text-[40px] font-serif font-black italic text-ink mb-3 leading-[1.1]">
                                     {esAlquiler ? (
                                         <>Alquileres <span className="italic font-light text-accent">Disponibles</span></>
                                     ) : (
@@ -316,7 +383,7 @@ export const LandingPage: React.FC = () => {
 
                     {/* Estado de la búsqueda semántica */}
                     {showingSemantic && !semanticLoading && semanticData && semanticResults.length > 0 && (
-                        <div aria-live="polite" className="-mt-6 mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                        <div aria-live="polite" className="mt-3 mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                             <span className="font-bold text-primary">
                                 {semanticData.count}{semanticData.count >= SEMANTIC_LIMIT ? '+' : ''} {semanticData.count === 1 ? 'inmueble' : 'inmuebles'}
                             </span>
@@ -372,8 +439,8 @@ export const LandingPage: React.FC = () => {
 
                     {/* GRID */}
                     {showingSemantic ? (
-                        semanticLoading ? (
-                            <SkeletonsGrid count={6} />
+                        semanticLoading && semanticResults.length === 0 ? (
+                            <LoadingBlock />
                         ) : semanticResults.length === 0 ? (
                             <div className="text-center py-16 px-4">
                                 <p className="text-xl md:text-2xl font-semibold text-ink mb-2 break-words">
@@ -417,7 +484,13 @@ export const LandingPage: React.FC = () => {
                                 )}
                             </div>
                         ) : (
-                            <>
+                            <div className="relative">
+                                {semanticLoading && <LoadingOverlay />}
+                                <div
+                                    key={semanticData?.query ?? query}
+                                    aria-busy={semanticLoading}
+                                    className={`animate-fade-slide transition-opacity duration-200 ${semanticLoading ? 'opacity-50' : 'opacity-100'}`}
+                                >
                                 {lowRelevance && (
                                     <div className="mb-8 rounded-2xl border border-sand bg-crema px-5 py-4 text-sm text-ink-soft">
                                         No hay coincidencias exactas con «{query}». Estos son los inmuebles
@@ -466,12 +539,13 @@ export const LandingPage: React.FC = () => {
                                         Volver al listado
                                     </button>
                                 </div>
-                            </>
+                                </div>
+                            </div>
                         )
                     ) : (
                         <>
-                            {loading && page === 0 ? (
-                                <SkeletonsGrid count={6} />
+                            {loading && inmuebles.length === 0 ? (
+                                <LoadingBlock />
                             ) : inmuebles.length === 0 ? (
                                 <div className="text-center py-20 text-gray-500">
                                     <p className="text-xl">
@@ -485,7 +559,13 @@ export const LandingPage: React.FC = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <>
+                                <div className="relative">
+                                    {loading && <LoadingOverlay />}
+                                    <div
+                                        key={JSON.stringify(filters)}
+                                        aria-busy={loading}
+                                        className={`animate-fade-slide transition-opacity duration-200 ${loading ? 'opacity-60' : 'opacity-100'}`}
+                                    >
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
                                         {inmuebles.map((inmueble, index) => (
                                             <PropertyCard
@@ -525,7 +605,8 @@ export const LandingPage: React.FC = () => {
                                         </div>
                                     )}
 
-                                </>
+                                    </div>
+                                </div>
                             )}
                         </>
                     )}

@@ -164,6 +164,26 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
         if (initialDeptoRef.current) getCiudadesByDepto(initialDeptoRef.current);
     }, [getCiudadesByDepto]);
 
+    // Mantiene la píldora sincronizada cuando la búsqueda cambia desde fuera
+    // (URL, atrás/adelante o la barra flotante). Antes el hero se remontaba con
+    // una `key`, lo que cerraba los paneles y provocaba saltos de altura.
+    const filtersKey = JSON.stringify(initialFilters ?? {});
+    useEffect(() => {
+        const next = initialFilters ?? {};
+        setTipoPropiedad(next.tipo_propiedad || '');
+        setOperacion(next.operacion === 'Alquiler' ? 'Alquiler' : 'Venta');
+        setPrecioMin(next.precio_min || '');
+        setPrecioMax(next.precio_max || '');
+        if ((next.departamento || '') !== selectedDepto) {
+            setSelectedDepto(next.departamento || '');
+            setSelectedCiudad(next.ciudad || '');
+            if (next.departamento) getCiudadesByDepto(next.departamento);
+        } else if ((next.ciudad || '') !== selectedCiudad) {
+            setSelectedCiudad(next.ciudad || '');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filtersKey]);
+
     const tipoPropiedadOptions = [
         { value: '', label: '¿Qué buscas?' },
         { value: 'Casa', label: 'Casa', icon: FaHome },
@@ -410,7 +430,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
             )}
 
             {/* Barra de búsqueda simplificada (solo móvil) */}
-            <div ref={mobileBarRef} className={`lg:hidden mt-6 ${smartSearch ? 'hidden' : ''}`}>
+            <div ref={mobileBarRef} id="barra-busqueda-movil" className={`lg:hidden mt-6 ${smartSearch ? 'hidden' : ''}`}>
                 <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-md border border-white/50">
                     <button onClick={toggleMobileFilters} aria-expanded={mobileFiltersOpen} className="flex-1 flex items-center gap-2 pl-4 min-h-[44px] py-3 text-muted focus:outline-none">
                         <FaSearch className="text-accent" size={16} />

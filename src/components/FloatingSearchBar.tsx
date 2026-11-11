@@ -1,8 +1,8 @@
 /**
  * Píldora de búsqueda flotante.
  * - Es la misma píldora del hero (mismas clases), pero fija bajo el navbar.
- * - Solo aparece cuando el visitante ya pasó filas de resultados: así no tapa el hero
- *   ni las primeras tarjetas, y sigue disponible al fondo del listado.
+ * - Aparece en cuanto el buscador del hero deja de estar a la vista: así nunca
+ *   se pierde el acceso a buscar o filtrar mientras se recorren los resultados.
  * - Respeta el modo activo (D13): en modo texto ofrece el campo de búsqueda y el atajo
  *   a filtros; en modo filtros ofrece el resumen y el atajo para cambiar de filtros,
  *   sin un input de texto suelto que cambiaría de modo sin querer.
@@ -31,10 +31,6 @@ interface FloatingSearchBarProps {
     onEnableSmartSearch: () => void;
 }
 
-/** Filas de resultados que hay que dejar atrás: 4 en escritorio y 2 en móvil. */
-const rowsBeforeShowing = (width: number) => (width < 640 ? 2 : 4);
-/** Columnas de la rejilla según el ancho (1 en móvil, 3 desde `sm`). */
-const columnsAt = (width: number) => (width < 640 ? 1 : 3);
 
 export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
     mode,
@@ -85,31 +81,34 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
                 return;
             }
 
-            const gridTop = grid.getBoundingClientRect().top + window.scrollY;
-            // De vuelta en el hero o en la cabecera de resultados: la píldora del hero ya sirve.
-            if (window.scrollY < gridTop - 100) {
+            // Se usa el buscador que de verdad está a la vista: la píldora en
+            // escritorio, la barra compacta en móvil o la píldora en modo texto.
+            const desktop = window.matchMedia('(min-width: 1024px)').matches;
+            const pill = document.getElementById('filtro-busqueda');
+            const compactBar = document.getElementById('barra-busqueda-movil');
+            const searchBar = desktop
+                ? pill
+                : (compactBar && compactBar.offsetParent !== null ? compactBar : pill);
+            const rect = searchBar?.getBoundingClientRect();
+            const searchOnScreen = !!rect && rect.height > 10 && rect.bottom > 96;
+
+            // Mientras el buscador del hero siga a la vista, el flotante sobra.
+            if (searchOnScreen) {
                 setVisible(false);
                 return;
             }
 
-            const cards = grid.querySelectorAll('article');
-            if (cards.length === 0) {
+            // Y solo tiene sentido dentro de la zona de resultados.
+            if (grid.getBoundingClientRect().top > window.innerHeight) {
                 setVisible(false);
                 return;
             }
 
-            // Se mide la última tarjeta de las primeras filas (1 columna en móvil, 3 en
-            // escritorio): cuando queda por encima de la pantalla, el visitante ya está
-            // leyendo resultados y necesita buscar otra vez sin subir.
-            const rowsPassed = Math.min(
-                rowsBeforeShowing(window.innerWidth) * columnsAt(window.innerWidth),
-                cards.length
-            );
-            const pastRows = cards[rowsPassed - 1].getBoundingClientRect().bottom < 0;
+            const hasResults = grid.querySelectorAll('article').length > 0;
             // Con pocos resultados la página es corta: al llegar al final también se ofrece.
             const atEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 200;
 
-            if (pastRows || atEnd) setVisible(true);
+            if (hasResults || atEnd) setVisible(true);
         };
 
         update();
