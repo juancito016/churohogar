@@ -416,9 +416,6 @@ export const LandingPage: React.FC = () => {
                                     </button>
                                 </span>
                             )}
-                            <span className="text-xs font-semibold uppercase tracking-wider text-muted/80">
-                                {semanticData.cached ? 'Desde caché' : 'Calculada ahora'} · {semanticData.timings.total_ms} ms
-                            </span>
                         </div>
                     )}
 

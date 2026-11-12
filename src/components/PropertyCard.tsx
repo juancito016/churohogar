@@ -12,7 +12,8 @@
  */
 
 import React from 'react';
-import { FaWhatsapp, FaBed, FaBath, FaRulerCombined, FaCamera, FaStar } from 'react-icons/fa';
+import { FaWhatsapp, FaBed, FaBath, FaRulerCombined, FaCamera } from 'react-icons/fa';
+import { MdStar } from 'react-icons/md';
 import type { Inmueble } from '../types/database.types';
 import { useBusinessConfig } from '../hooks/useBusinessConfig';
 
@@ -98,9 +99,23 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ inmueble }) => {
                     {(inmueble.destacado || esAlquiler) && (
                         <div className="absolute top-3 left-3 flex flex-col gap-1 items-start">
                             {inmueble.destacado && (
-                                <div className="bg-primary/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full shadow flex items-center gap-1">
-                                    <FaStar size={10} /> Destacado
-                                </div>
+                                <span
+                                    className="relative inline-flex -rotate-6 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+                                    title="Inmueble destacado"
+                                    aria-label="Inmueble destacado"
+                                >
+                                    {/* Halo blanco: separa la estrella de cualquier foto. */}
+                                    <MdStar
+                                        size={40}
+                                        className="absolute -left-[3px] -top-[3px] text-white drop-shadow-[0_3px_5px_rgba(0,0,0,0.35)]"
+                                        aria-hidden
+                                    />
+                                    <MdStar
+                                        size={34}
+                                        className="relative text-[#FFB000] drop-shadow-[0_1px_2px_rgba(120,70,0,0.45)]"
+                                        aria-hidden
+                                    />
+                                </span>
                             )}
                             {esAlquiler && (
                                 <div className="bg-accent-strong/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full shadow">
