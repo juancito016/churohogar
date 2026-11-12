@@ -1,5 +1,12 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../services/supabaseClient';
+import {
+    findSimilarLocationName,
+    formatLocationName,
+    normalizeLocationName,
+} from '../utils/locationNames';
+
+export { findSimilarLocationName, formatLocationName, normalizeLocationName };
 
 export interface UbicacionDepartamento {
     id: string;
@@ -22,24 +29,6 @@ export interface UbicacionBarrio {
 export interface BarrioConInmuebles extends UbicacionBarrio {
     inmuebles: number;
 }
-
-/**
- * Normaliza un nombre de ubicación igual que la base de datos
- * (`public.normalize_nombre`): minúsculas, sin tildes y con espacios simples.
- * Sirve para detectar duplicados antes de enviar el insert y para mostrar un
- * mensaje claro cuando el índice único los bloquea.
- */
-export const normalizeLocationName = (valor: string) =>
-    (valor ?? '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .replace(/\s+/g, ' ')
-        .trim();
-
-/** Deja el nombre listo para guardar: sin extremos y con espacios simples. */
-export const formatLocationName = (valor: string) =>
-    (valor ?? '').replace(/\s+/g, ' ').trim();
 
 const esDuplicado = (error: unknown) => (error as { code?: string } | null)?.code === '23505';
 
@@ -238,6 +227,18 @@ export const useLocationManager = () => {
         return barrios.map(b => ({ ...b, inmuebles: conteo.get(b.id) ?? 0 }));
     }, []);
 
+    // Lista simple (sin conteos) para sugerir barrios en el formulario
+    const listBarrios = useCallback(async (ciudadId: string): Promise<UbicacionBarrio[]> => {
+        if (!ciudadId) return [];
+        const { data, error } = await supabase
+            .from('barrios')
+            .select('id, nombre, ciudad_id')
+            .eq('ciudad_id', ciudadId)
+            .order('nombre');
+        if (error) throw error;
+        return (data ?? []) as UbicacionBarrio[];
+    }, []);
+
     // Agregar Barrio
     const addBarrio = async (nombre: string, ciudad_id: string) => {
         const limpio = formatLocationName(nombre);
@@ -315,12 +316,15 @@ export const useLocationManager = () => {
     };
 
     /**
-     * Devuelve el ID del barrio existente o lo crea. La comparación ignora
-     * tildes, mayúsculas y espacios extra, igual que el índice único de la
-     * base. Si dos guardados simultáneos chocan, el error `23505` se resuelve
-     * releyendo el barrio que ganó la carrera.
+     * Devuelve el ID del barrio existente o lo crea, y dice si lo creó. La
+     * comparación ignora tildes, mayúsculas y espacios extra, igual que el
+     * índice único de la base. Si dos guardados simultáneos chocan, el error
+     * `23505` se resuelve releyendo el barrio que ganó la carrera.
      */
-    const getOrCreateBarrio = async (nombre: string, ciudad_id: string) => {
+    const getOrCreateBarrio = async (
+        nombre: string,
+        ciudad_id: string
+    ): Promise<{ id: string; creado: boolean }> => {
         const clave = normalizeLocationName(nombre);
         if (!clave || !ciudad_id) throw new Error('Falta nombre del barrio o ciudad');
 
@@ -334,7 +338,7 @@ export const useLocationManager = () => {
         };
 
         const existente = await buscarExistente();
-        if (existente) return existente;
+        if (existente) return { id: existente, creado: false };
 
         const { data, error } = await supabase
             .from('barrios')
@@ -345,12 +349,12 @@ export const useLocationManager = () => {
         if (error) {
             if (esDuplicado(error)) {
                 const id = await buscarExistente();
-                if (id) return id;
+                if (id) return { id, creado: false };
             }
             throw error;
         }
 
-        return data.id;
+        return { id: data.id as string, creado: true };
     };
 
     return {
@@ -371,6 +375,7 @@ export const useLocationManager = () => {
         countInmueblesByCiudad,
         countInmueblesByDepartamento,
         fetchBarrios,
+        listBarrios,
         addBarrio,
         renameBarrio,
         deleteBarrio,

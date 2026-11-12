@@ -27,6 +27,7 @@ import {
 import toast from 'react-hot-toast';
 import {
     normalizeLocationName,
+    findSimilarLocationName,
     type BarrioConInmuebles,
     type UbicacionCiudad,
     type UbicacionDepartamento
@@ -139,6 +140,22 @@ export const AdminLocationsTab: React.FC<Props> = ({
         if (!clave) return barrios;
         return barrios.filter(b => normalizeLocationName(b.nombre).includes(clave));
     }, [barrios, busquedaBarrio]);
+
+    const barriosSinUso = useMemo(
+        () => barrios.filter(b => b.inmuebles === 0).length,
+        [barrios]
+    );
+
+    const claveNuevoBarrio = normalizeLocationName(newBarrio);
+    const barrioNuevoDuplicado = Boolean(claveNuevoBarrio) && barrios.some(
+        b => normalizeLocationName(b.nombre) === claveNuevoBarrio
+    );
+    const barrioNuevoSimilar = useMemo(
+        () => (barrioNuevoDuplicado || !claveNuevoBarrio
+            ? null
+            : findSimilarLocationName(barrios.map(b => b.nombre), newBarrio)),
+        [barrios, barrioNuevoDuplicado, claveNuevoBarrio, newBarrio]
+    );
 
     const empezarEdicion = (tipo: TipoLista, id: string, nombre: string) => {
         setEditing({ tipo, id });
@@ -438,7 +455,12 @@ export const AdminLocationsTab: React.FC<Props> = ({
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <h3 className="font-serif text-xl font-bold text-admin-accent flex items-center gap-2"><FaCodeBranch /> Barrios</h3>
                     {ciudadSeleccionada && (
-                        <span className="text-sm text-admin-muted">{barrios.length} barrio(s) en {ciudadSeleccionada.nombre}</span>
+                        <span className="text-sm text-admin-muted">
+                            {barrios.length} barrio(s) en {ciudadSeleccionada.nombre}
+                            {barriosSinUso > 0 && (
+                                <> · <span className="text-admin-warning">{barriosSinUso} sin uso</span></>
+                            )}
+                        </span>
                     )}
                 </div>
 
@@ -477,13 +499,22 @@ export const AdminLocationsTab: React.FC<Props> = ({
                             />
                             <button
                                 type="submit"
-                                disabled={!selectedCiudadForBarrio || !newBarrio.trim()}
+                                disabled={!selectedCiudadForBarrio || !newBarrio.trim() || barrioNuevoDuplicado}
                                 className="bg-admin-primary text-white px-4 rounded font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                                 aria-label="Agregar barrio"
                             >
                                 <FaPlus />
                             </button>
                         </div>
+                        {barrioNuevoDuplicado ? (
+                            <p className="mt-1 text-xs text-admin-danger">
+                                Ya existe un barrio con ese nombre en esta ciudad.
+                            </p>
+                        ) : barrioNuevoSimilar ? (
+                            <p className="mt-1 text-xs text-admin-warning">
+                                Se parece a «{barrioNuevoSimilar}». Revísalo antes de crear un duplicado.
+                            </p>
+                        ) : null}
                     </form>
                 </div>
 
@@ -518,7 +549,7 @@ export const AdminLocationsTab: React.FC<Props> = ({
                                         <div className="flex items-center gap-2 flex-1 min-w-0">
                                             {renderEditor('barrio', b.id, b.nombre)}
                                             <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${b.inmuebles > 0 ? 'bg-admin-accent-soft text-admin-accent' : 'bg-admin-surface-2 text-admin-muted'}`}>
-                                                {b.inmuebles} inmueble{b.inmuebles === 1 ? '' : 's'}
+                                                {b.inmuebles > 0 ? `${b.inmuebles} inmueble${b.inmuebles === 1 ? '' : 's'}` : 'Sin uso'}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1 shrink-0">
@@ -547,7 +578,10 @@ export const AdminLocationsTab: React.FC<Props> = ({
                                         <div className="mt-3 p-3 rounded-lg border border-admin-warning/40 bg-admin-warning-soft">
                                             <p className="text-xs text-admin-warning mb-2">
                                                 Fusionar <strong>{b.nombre}</strong> con otro barrio de {ciudadSeleccionada?.nombre}.
-                                                Los {b.inmuebles} inmueble(s) pasarán al destino y &quot;{b.nombre}&quot; desaparecerá.
+                                                {b.inmuebles > 0
+                                                    ? ` Los ${b.inmuebles} inmueble(s) pasarán al destino.`
+                                                    : ' No tiene inmuebles: solo desaparecerá el barrio.'}
+                                                {' '}&quot;{b.nombre}&quot; dejará de existir.
                                             </p>
                                             <div className="flex flex-col sm:flex-row gap-2">
                                                 <select

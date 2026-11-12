@@ -20,7 +20,7 @@ const POR_CODIGO: Record<string, string> = {
     '23502': 'Falta un dato obligatorio. Completa el formulario e intenta de nuevo.',
     '22P02': 'Alguno de los datos tiene un formato inválido. Revisa el formulario.',
     '22001': 'Uno de los textos es demasiado largo. Acórtalo e intenta de nuevo.',
-    '42501': 'No tienes permisos para esta acción. Vuelve a iniciar sesión como administrador.',
+    '42501': 'No tienes permisos para esta acción. Si deberías tenerlos, pide a un administrador que revise tu rol.',
     '21000': 'La operación no se pudo completar. Recarga la página e intenta de nuevo.',
     PGRST301: 'Tu sesión caducó. Vuelve a iniciar sesión.',
     PGRST116: 'No se encontró el registro. Actualiza la lista e intenta de nuevo.',
@@ -84,7 +84,7 @@ export const mensajeError = (error: unknown, respaldo: string): string => {
         return 'Tu sesión caducó. Vuelve a iniciar sesión.';
     }
     if (lower.includes('row-level security') || lower.includes('permission denied')) {
-        return 'No tienes permisos para esta acción. Vuelve a iniciar sesión como administrador.';
+        return 'No tienes permisos para esta acción. Si deberías tenerlos, pide a un administrador que revise tu rol.';
     }
     if (lower.includes('duplicate key')) {
         return 'Ya existe un registro con ese nombre. Usa otro o edita el existente.';

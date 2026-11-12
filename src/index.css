@@ -64,6 +64,9 @@
     animation: fadeIn 0.14s ease-out forwards;
   }
   .admin-shell {
+    /* Controles nativos (selects, date pickers) en modo oscuro: sin esto el
+       desplegable se abría con fondo blanco y texto claro, ilegible. */
+    color-scheme: dark;
     background-image:
       radial-gradient(1200px 600px at 15% -10%, rgba(200, 169, 107, 0.08), transparent 60%),
       radial-gradient(900px 500px at 100% 0%, rgba(163, 36, 51, 0.10), transparent 55%);
@@ -82,6 +85,39 @@
   .admin-table td {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
+  }
+  /* Desplegables del panel: fondo y borde del tema, flecha propia y texto claro. */
+  .admin-shell select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: var(--color-admin-surface-2);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23C8A96B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7l5 6 5-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 12px;
+    border-color: var(--color-admin-border);
+    color: var(--color-admin-text);
+    padding-right: 2.25rem;
+    cursor: pointer;
+  }
+  .admin-shell select:disabled,
+  .admin-shell select:disabled option {
+    color: var(--color-admin-muted);
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+  .admin-shell select:focus-visible {
+    outline: 2px solid var(--color-admin-accent);
+    outline-offset: 1px;
+  }
+  /* La lista abierta la dibuja el sistema: hay que pintarla a mano. */
+  .admin-shell select option {
+    background-color: var(--color-admin-surface);
+    color: var(--color-admin-text);
+  }
+  .admin-shell select option:checked {
+    background-color: var(--color-admin-primary);
+    color: #ffffff;
   }
   .admin-shell * {
     scrollbar-width: thin;

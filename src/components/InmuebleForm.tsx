@@ -17,10 +17,16 @@ import toast from 'react-hot-toast';
 import { supabase } from '../services/supabaseClient';
 import imageCompression from 'browser-image-compression';
 import { FaTimes, FaCamera, FaSpinner, FaArrowLeft, FaArrowRight, FaStar, FaTrash } from 'react-icons/fa';
-import { useLocationManager } from '../hooks/useLocationManager';
+import {
+    useLocationManager,
+    findSimilarLocationName,
+    normalizeLocationName,
+    type UbicacionBarrio,
+} from '../hooks/useLocationManager';
 import { useBusinessConfig } from '../hooks/useBusinessConfig';
 import { AccessibleModal } from './ui/AccessibleModal';
 import { getImageUrl, getStoragePath } from '../utils/helpers';
+import { mensajeError } from '../utils/errors';
 import { syncInmuebleEmbeddings } from '../utils/syncEmbedding';
 import {
     DURACIONES,
@@ -154,7 +160,7 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
     const [duracion, setDuracion] = useState<DuracionPublicacion>('30');
     const [diasPersonalizados, setDiasPersonalizados] = useState('45');
 
-    const { getOrCreateBarrio, departamentos, ciudades, fetchDepartamentos, fetchCiudades } = useLocationManager();
+    const { getOrCreateBarrio, listBarrios, departamentos, ciudades, fetchDepartamentos, fetchCiudades } = useLocationManager();
     const { config } = useBusinessConfig();
     const whatsappSugerido = config.whatsapp.startsWith('591')
         ? config.whatsapp.slice(3)
@@ -165,6 +171,11 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
         fetchDepartamentos();
         fetchCiudades();
     }, [fetchDepartamentos, fetchCiudades]);
+
+    // Barrios de la ciudad elegida: alimentan el autocompletado y el aviso de
+    // duplicado, para no crear variantes del mismo barrio por un typo.
+    const [barriosCiudad, setBarriosCiudad] = useState<UbicacionBarrio[]>([]);
+    const [cargandoBarrios, setCargandoBarrios] = useState(false);
 
     const [existingImages, setExistingImages] = useState<any[]>(() => sortImagesByOrder(inmueble?.imagenes || []));
     const [markedForDeletion, setMarkedForDeletion] = useState<string[]>([]);
@@ -200,6 +211,24 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
 
     const [formUbicacion, setFormUbicacion] = useState(() => buildInitialUbicacion(inmueble));
     const [formData, setFormData] = useState(() => buildInitialFormData(inmueble));
+
+    useEffect(() => {
+        let activo = true;
+
+        if (!formUbicacion.ciudad_id) {
+            setBarriosCiudad([]);
+            setCargandoBarrios(false);
+            return;
+        }
+
+        setCargandoBarrios(true);
+        listBarrios(formUbicacion.ciudad_id)
+            .then(data => { if (activo) setBarriosCiudad(data); })
+            .catch(() => { if (activo) setBarriosCiudad([]); })
+            .finally(() => { if (activo) setCargandoBarrios(false); });
+
+        return () => { activo = false; };
+    }, [formUbicacion.ciudad_id, listBarrios]);
 
     const hasChanges = useMemo(() => {
         const formChanged = (Object.keys(initialFormData) as (keyof typeof initialFormData)[]).some(key => {
@@ -299,6 +328,24 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
     const ciudadesFiltradas = formUbicacion.departamento_id
         ? ciudades.filter(c => c.departamento_id === formUbicacion.departamento_id)
         : [];
+
+    const nombreBarrio = formUbicacion.barrio_nombre.replace(/\s+/g, ' ').trim();
+    const claveBarrio = normalizeLocationName(nombreBarrio);
+    const ciudadNombre = ciudades.find(c => c.id === formUbicacion.ciudad_id)?.nombre ?? '';
+
+    const barrioExistente = useMemo(
+        () => (claveBarrio
+            ? barriosCiudad.find(b => normalizeLocationName(b.nombre) === claveBarrio) ?? null
+            : null),
+        [barriosCiudad, claveBarrio]
+    );
+
+    const barrioSimilar = useMemo(
+        () => (barrioExistente || !claveBarrio
+            ? null
+            : findSimilarLocationName(barriosCiudad.map(b => b.nombre), nombreBarrio)),
+        [barriosCiudad, barrioExistente, claveBarrio, nombreBarrio]
+    );
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -446,7 +493,18 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
 
         try {
             // Lógica crítica: Obtener o crear el UUID del Barrio
-            const finalBarrioId = await getOrCreateBarrio(formUbicacion.barrio_nombre, formUbicacion.ciudad_id);
+            let finalBarrioId: string;
+            let barrioCreado = false;
+            try {
+                const barrio = await getOrCreateBarrio(formUbicacion.barrio_nombre, formUbicacion.ciudad_id);
+                finalBarrioId = barrio.id;
+                barrioCreado = barrio.creado;
+            } catch (barrioError) {
+                if ((barrioError as { code?: string } | null)?.code === '42501') {
+                    throw new Error('Tu rol puede publicar inmuebles pero no crear barrios. Pide el permiso «Ubicaciones → Gestionar» o elige un barrio que ya exista.');
+                }
+                throw barrioError;
+            }
 
             const baseSlug = buildSlugBase(titulo);
             let slug = inmueble?.slug || buildSlugCandidate(baseSlug);
@@ -590,6 +648,9 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
             const pendingSync = syncInmuebleEmbeddings(inmuebleId);
 
             toast.success(isEditing ? '¡Inmueble actualizado!' : '¡Inmueble publicado!', { id: toastId });
+            if (barrioCreado) {
+                toast.success(`Barrio «${nombreBarrio}» creado.`);
+            }
             onSuccess();
 
             void pendingSync.then(result => {
@@ -600,8 +661,11 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
                     { duration: 8000 }
                 );
             });
-        } catch (error: any) {
-            toast.error(`Error de Base de Datos: ${error.message}`, { id: toastId });
+        } catch (error) {
+            toast.error(
+                mensajeError(error, 'No se pudo guardar el inmueble. Revisa los datos e intenta de nuevo.'),
+                { id: toastId }
+            );
         } finally {
             setSubmitting(false);
         }
@@ -856,17 +920,57 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-admin-text mb-1">Barrio <span className="text-admin-danger">*</span></label>
+                                <label htmlFor="barrio_nombre" className="block text-sm font-bold text-admin-text mb-1">Barrio <span className="text-admin-danger">*</span></label>
                                 <input
                                     required
+                                    id="barrio_nombre"
+                                    list="barrios-ciudad"
+                                    autoComplete="off"
                                     type="text"
                                     name="barrio_nombre"
                                     value={formUbicacion.barrio_nombre}
                                     onChange={handleUbiChange}
-                                    placeholder="Ej. Tabladita, Miraflores..."
-                                    className="w-full px-4 py-3 border border-admin-border rounded-xl bg-admin-surface focus:ring-admin-accent focus:border-admin-accent"
+                                    disabled={!formUbicacion.ciudad_id}
+                                    placeholder={formUbicacion.ciudad_id ? 'Ej. Tabladita, Miraflores…' : 'Elige una ciudad primero'}
+                                    aria-describedby="barrio-ayuda"
+                                    className="w-full px-4 py-3 border border-admin-border rounded-xl bg-admin-surface focus:ring-admin-accent focus:border-admin-accent disabled:bg-admin-surface-2 disabled:cursor-not-allowed"
                                 />
-                                <p className="text-xs text-admin-muted mt-1">Si el barrio no existe, se creará mágicamente.</p>
+                                <datalist id="barrios-ciudad">
+                                    {barriosCiudad.map(b => (
+                                        <option key={b.id} value={b.nombre} />
+                                    ))}
+                                </datalist>
+                                <p id="barrio-ayuda" aria-live="polite" className="mt-1 text-xs">
+                                    {!formUbicacion.ciudad_id ? (
+                                        <span className="text-admin-muted">Elige una ciudad para ver sus barrios.</span>
+                                    ) : cargandoBarrios ? (
+                                        <span className="text-admin-muted">Cargando barrios…</span>
+                                    ) : !claveBarrio ? (
+                                        <span className="text-admin-muted">
+                                            Escribe el barrio; te sugerimos los {barriosCiudad.length} que ya existen en {ciudadNombre}.
+                                        </span>
+                                    ) : barrioExistente ? (
+                                        <span className="text-admin-success">
+                                            Se usará el barrio existente «{barrioExistente.nombre}».
+                                        </span>
+                                    ) : barrioSimilar ? (
+                                        <span className="text-admin-warning">
+                                            Ya existe «{barrioSimilar}».{' '}
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormUbicacion(prev => ({ ...prev, barrio_nombre: barrioSimilar }))}
+                                                className="font-bold underline underline-offset-2 hover:text-admin-accent"
+                                            >
+                                                Usar ese
+                                            </button>
+                                            {' '}o sigue escribiendo para crear «{nombreBarrio}».
+                                        </span>
+                                    ) : (
+                                        <span className="text-admin-muted">
+                                            Se creará el barrio «{nombreBarrio}» en {ciudadNombre}.
+                                        </span>
+                                    )}
+                                </p>
                             </div>
                         </div>
 
