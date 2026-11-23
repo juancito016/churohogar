@@ -8,6 +8,7 @@ import {
 import { getImageUrl } from '../utils/helpers';
 import { Footer } from '../components/Footer';
 import { ImageLightbox } from '../components/ui/ImageLightbox';
+import { pushLightboxHistory } from '../utils/lightboxHistory';
 import { useSimilarInmuebles } from '../hooks/useSimilarInmuebles';
 import { useBusinessConfig } from '../hooks/useBusinessConfig';
 
@@ -280,7 +281,10 @@ export const PropertyDetail: React.FC = () => {
             swipeRef.current = false;
             return;
         }
-        if (total > 0) setLightboxOpen(true);
+        if (total > 0) {
+            pushLightboxHistory();
+            setLightboxOpen(true);
+        }
     };
 
     const formatearPrecio = (precio: number, moneda: string) => {

@@ -29,6 +29,7 @@ import { ImageLightbox, type LightboxImage } from './ui/ImageLightbox';
 import { getImageUrl, getStoragePath } from '../utils/helpers';
 import { mensajeError } from '../utils/errors';
 import { syncInmuebleEmbeddings } from '../utils/syncEmbedding';
+import { pushLightboxHistory } from '../utils/lightboxHistory';
 import {
     DURACIONES,
     describirVencimiento,
@@ -1063,7 +1064,10 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
                                         >
                                             <button
                                                 type="button"
-                                                onClick={() => setVisorIndex(index)}
+                                                onClick={() => {
+                                                    pushLightboxHistory();
+                                                    setVisorIndex(index);
+                                                }}
                                                 aria-label={`Ver la foto ${index + 1} en grande`}
                                                 className="absolute inset-0 block h-full w-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent focus-visible:ring-inset"
                                             >
