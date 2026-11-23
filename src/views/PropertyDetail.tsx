@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import {
     FaWhatsapp, FaBed, FaBath, FaRulerCombined, FaMapMarkerAlt, FaExpandArrowsAlt,
-    FaShareAlt, FaChevronLeft, FaChevronRight, FaTimes, FaCheckCircle, FaArrowLeft
+    FaShareAlt, FaChevronLeft, FaChevronRight, FaCheckCircle, FaArrowLeft
 } from 'react-icons/fa';
 import { getImageUrl } from '../utils/helpers';
 import { Footer } from '../components/Footer';
+import { ImageLightbox } from '../components/ui/ImageLightbox';
 import { useSimilarInmuebles } from '../hooks/useSimilarInmuebles';
 import { useBusinessConfig } from '../hooks/useBusinessConfig';
 
@@ -86,6 +87,8 @@ export const PropertyDetail: React.FC = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [touchStartX, setTouchStartX] = useState<number | null>(null);
+    // Un swipe cambia de foto; el clic que dispara el navegador después no debe abrir el visor.
+    const swipeRef = useRef(false);
     const { similares } = useSimilarInmuebles(inmueble?.id);
     const { config } = useBusinessConfig();
     const navigate = useNavigate();
@@ -255,26 +258,29 @@ export const PropertyDetail: React.FC = () => {
         setActiveIndex(((i % total) + total) % total);
     }, [total]);
 
-    useEffect(() => {
-        if (!lightboxOpen) return;
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setLightboxOpen(false);
-            if (e.key === 'ArrowRight') goTo(activeIndex + 1);
-            if (e.key === 'ArrowLeft') goTo(activeIndex - 1);
-        };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [lightboxOpen, activeIndex, goTo]);
-
-    const onTouchStart = (e: React.TouchEvent) => setTouchStartX(e.touches[0].clientX);
+    const onTouchStart = (e: React.TouchEvent) => {
+        swipeRef.current = false;
+        setTouchStartX(e.touches[0].clientX);
+    };
     const onTouchEnd = (e: React.TouchEvent) => {
         if (touchStartX === null) return;
         const dx = e.changedTouches[0].clientX - touchStartX;
         if (Math.abs(dx) > 40) {
+            swipeRef.current = true;
             if (dx < 0) goTo(activeIndex + 1);
             else goTo(activeIndex - 1);
+            window.setTimeout(() => { swipeRef.current = false; }, 400);
         }
         setTouchStartX(null);
+    };
+
+    // Toda la foto abre el visor; un swipe previo no cuenta como clic.
+    const abrirVisor = () => {
+        if (swipeRef.current) {
+            swipeRef.current = false;
+            return;
+        }
+        if (total > 0) setLightboxOpen(true);
     };
 
     const formatearPrecio = (precio: number, moneda: string) => {
@@ -477,35 +483,42 @@ export const PropertyDetail: React.FC = () => {
                                 onTouchEnd={onTouchEnd}
                             >
                                 {total > 0 ? (
-                                    <img
-                                        src={getImageUrl(imagenes[activeIndex]?.url_storage)}
-                                        alt={`${inmueble.titulo} - foto ${activeIndex + 1}`}
-                                        className="w-full h-[260px] sm:h-[340px] lg:h-[380px] xl:h-[460px] object-cover"
-                                    />
+                                    <button
+                                        type="button"
+                                        onClick={abrirVisor}
+                                        aria-label={`Ver ${inmueble.titulo} en pantalla completa`}
+                                        className="block w-full cursor-zoom-in focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/60 focus-visible:ring-inset"
+                                    >
+                                        <img
+                                            src={getImageUrl(imagenes[activeIndex]?.url_storage)}
+                                            alt={`${inmueble.titulo} - foto ${activeIndex + 1}`}
+                                            className="w-full h-[260px] sm:h-[340px] lg:h-[380px] xl:h-[460px] object-cover"
+                                        />
+                                    </button>
                                 ) : (
                                     <div className="w-full h-[260px] sm:h-[340px] lg:h-[380px] xl:h-[460px] flex items-center justify-center text-muted font-bold">Sin Imagen</div>
                                 )}
 
                                 {vendido && (
-                                    <div className="absolute top-4 left-4 z-10 bg-red-600 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
+                                    <div className="pointer-events-none absolute top-4 left-4 z-10 bg-red-600 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
                                         Vendido
                                     </div>
                                 )}
 
                                 {alquilado && (
-                                    <div className="absolute top-4 left-4 z-10 bg-red-600 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
+                                    <div className="pointer-events-none absolute top-4 left-4 z-10 bg-red-600 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
                                         Alquilado
                                     </div>
                                 )}
 
                                 {vencido && (
-                                    <div className="absolute top-4 left-4 z-10 bg-amber-500 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
+                                    <div className="pointer-events-none absolute top-4 left-4 z-10 bg-amber-500 text-white font-black uppercase tracking-widest text-xs px-4 py-2 rounded-full shadow-lg">
                                         Publicación vencida
                                     </div>
                                 )}
 
                                 {total > 1 && (
-                                    <div className="absolute top-4 right-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                    <div className="pointer-events-none absolute top-4 right-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
                                         {activeIndex + 1} / {total}
                                     </div>
                                 )}
@@ -527,16 +540,6 @@ export const PropertyDetail: React.FC = () => {
                                             <FaChevronRight size={16} />
                                         </button>
                                     </>
-                                )}
-
-                                {total > 0 && (
-                                    <button
-                                        onClick={() => setLightboxOpen(true)}
-                                        aria-label="Ver foto en pantalla completa"
-                                        className="absolute bottom-3 right-3 bg-black/60 hover:bg-black text-white p-2.5 rounded-full backdrop-blur-sm transition"
-                                    >
-                                        <FaExpandArrowsAlt size={14} />
-                                    </button>
                                 )}
                             </div>
 
@@ -759,45 +762,18 @@ export const PropertyDetail: React.FC = () => {
                 </div>
             </div>
 
-            {/* Lightbox */}
+            {/* Visor de fotos */}
             {lightboxOpen && total > 0 && (
-                <div
-                    className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center"
-                    onClick={() => setLightboxOpen(false)}
-                >
-                    <button
-                        className="absolute top-4 right-4 text-white/80 hover:text-white p-3"
-                        aria-label="Cerrar"
-                        onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
-                    >
-                        <FaTimes size={26} />
-                    </button>
-                    {total > 1 && (
-                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 text-sm font-bold">
-                            {activeIndex + 1} / {total}
-                        </div>
-                    )}
-                    <button
-                        className="absolute left-3 md:left-8 text-white/70 hover:text-white p-3"
-                        aria-label="Anterior"
-                        onClick={(e) => { e.stopPropagation(); goTo(activeIndex - 1); }}
-                    >
-                        <FaChevronLeft size={30} />
-                    </button>
-                    <img
-                        src={getImageUrl(imagenes[activeIndex]?.url_storage)}
-                        alt={`${inmueble.titulo} - foto ${activeIndex + 1}`}
-                        className="max-h-[85vh] max-w-[92vw] object-contain rounded-lg"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                    <button
-                        className="absolute right-3 md:right-8 text-white/70 hover:text-white p-3"
-                        aria-label="Siguiente"
-                        onClick={(e) => { e.stopPropagation(); goTo(activeIndex + 1); }}
-                    >
-                        <FaChevronRight size={30} />
-                    </button>
-                </div>
+                <ImageLightbox
+                    images={imagenes.map((img, idx) => ({
+                        src: getImageUrl(img.url_storage),
+                        alt: `${inmueble.titulo} - foto ${idx + 1}`,
+                    }))}
+                    index={activeIndex}
+                    onIndexChange={setActiveIndex}
+                    onClose={() => setLightboxOpen(false)}
+                    title={`Fotos de ${inmueble.titulo}`}
+                />
             )}
 
             <Footer />

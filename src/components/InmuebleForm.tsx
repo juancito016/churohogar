@@ -25,6 +25,7 @@ import {
 } from '../hooks/useLocationManager';
 import { useBusinessConfig } from '../hooks/useBusinessConfig';
 import { AccessibleModal } from './ui/AccessibleModal';
+import { ImageLightbox, type LightboxImage } from './ui/ImageLightbox';
 import { getImageUrl, getStoragePath } from '../utils/helpers';
 import { mensajeError } from '../utils/errors';
 import { syncInmuebleEmbeddings } from '../utils/syncEmbedding';
@@ -182,6 +183,8 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
     const [photoOrder, setPhotoOrder] = useState<PhotoRef[]>(() =>
         sortImagesByOrder(inmueble?.imagenes || []).map(img => ({ kind: 'existing', id: img.id }))
     );
+    // Índice de la foto que se está viendo en grande (null = visor cerrado).
+    const [visorIndex, setVisorIndex] = useState<number | null>(null);
 
     useEffect(() => {
         const images = sortImagesByOrder(inmueble?.imagenes || []);
@@ -697,6 +700,19 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
         ref => !(ref.kind === 'existing' && markedForDeletion.includes(ref.id))
     );
 
+    // Fotos que muestra el visor, en el mismo orden que la tira.
+    const visorImages: LightboxImage[] = photoOrder.map((ref, index) => {
+        if (ref.kind === 'existing') {
+            const existing = existingImages.find(img => img.id === ref.id);
+            return {
+                src: getImageUrl(existing?.url_storage),
+                alt: `Foto ${index + 1}`,
+            };
+        }
+        const nueva = newPhotos.find(photo => photo.key === ref.key);
+        return { src: nueva?.preview || '', alt: `Foto nueva ${index + 1}` };
+    });
+
     const expiracionPrevista = expiracionDesdeOpcion(duracion, Number(diasPersonalizados));
     const textoExpiracionPrevista = expiracionPrevista
         ? new Intl.DateTimeFormat('es-BO', {
@@ -1045,12 +1061,19 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
                                             key={existing ? `db-${existing.id}` : `new-${newPhoto!.key}`}
                                             className={`relative w-24 h-24 rounded-xl overflow-hidden group shadow-md border-2 ${isMarked ? 'border-admin-danger' : isCover ? 'border-admin-accent' : existing ? 'border-admin-success/30' : 'border-admin-border'}`}
                                         >
-                                            <img
-                                                src={imageUrl}
-                                                className={`object-cover w-full h-full ${isMarked ? 'opacity-30 grayscale' : existing ? 'opacity-80' : ''}`}
-                                                alt={isCover ? 'Portada del inmueble' : existing ? 'Foto online' : 'Vista previa de foto nueva'}
-                                            />
-                                            <div className={`absolute top-0 left-0 z-10 text-[10px] px-1.5 py-0.5 rounded-br-lg ${isMarked ? 'bg-admin-danger-strong text-white' : isCover ? 'bg-admin-primary text-white' : existing ? 'bg-admin-success-strong text-white' : 'bg-admin-surface-2 text-admin-muted'}`}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setVisorIndex(index)}
+                                                aria-label={`Ver la foto ${index + 1} en grande`}
+                                                className="absolute inset-0 block h-full w-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent focus-visible:ring-inset"
+                                            >
+                                                <img
+                                                    src={imageUrl}
+                                                    className={`object-cover w-full h-full ${isMarked ? 'opacity-30 grayscale' : existing ? 'opacity-80' : ''}`}
+                                                    alt={isCover ? 'Portada del inmueble' : existing ? 'Foto online' : 'Vista previa de foto nueva'}
+                                                />
+                                            </button>
+                                            <div className={`pointer-events-none absolute top-0 left-0 z-10 text-[10px] px-1.5 py-0.5 rounded-br-lg ${isMarked ? 'bg-admin-danger-strong text-white' : isCover ? 'bg-admin-primary text-white' : existing ? 'bg-admin-success-strong text-white' : 'bg-admin-surface-2 text-admin-muted'}`}>
                                                 {isMarked ? 'Se eliminará' : isCover ? 'Portada' : existing ? 'Online' : 'Nueva'}
                                             </div>
                                             {isMarked ? (
@@ -1064,7 +1087,7 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-0.5 bg-black/60 p-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition">
+                                                <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-0.5 bg-black/60 p-1 opacity-100 transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-within:opacity-100">
                                                     <button
                                                         type="button"
                                                         onClick={() => movePhoto(index, -1)}
@@ -1169,6 +1192,16 @@ export const InmuebleForm: React.FC<FormProps> = ({ inmueble, adminId, onClose, 
                         </button>
                     </div>
                 </AccessibleModal>
+            )}
+
+            {visorIndex !== null && visorImages.length > 0 && (
+                <ImageLightbox
+                    images={visorImages}
+                    index={visorIndex}
+                    onIndexChange={setVisorIndex}
+                    onClose={() => setVisorIndex(null)}
+                    title="Fotos del inmueble"
+                />
             )}
         </div>
     );

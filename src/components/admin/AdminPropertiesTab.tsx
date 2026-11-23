@@ -24,9 +24,15 @@ import toast from 'react-hot-toast';
 import { InmuebleForm } from '../InmuebleForm';
 import { AccessibleModal } from '../ui/AccessibleModal';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { ImageLightbox, type LightboxImage } from '../ui/ImageLightbox';
 
 const getPortada = (imagenes: { url_storage: string; orden?: number | null }[] | null | undefined) =>
     [...(imagenes || [])].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))[0];
+
+type InmuebleConFotos = {
+    titulo: string;
+    imagenes?: { url_storage: string; orden?: number | null }[] | null;
+};
 
 /**
  * Props para el componente AdminPropertiesTab
@@ -115,6 +121,8 @@ export const AdminPropertiesTab: React.FC<Props> = ({
     const [bulkLoading, setBulkLoading] = useState(false);
     const [confirmacion, setConfirmacion] = useState<Confirmacion | null>(null);
     const [confirmando, setConfirmando] = useState(false);
+    // Visor de fotos: inmueble y foto pulsados (null = cerrado).
+    const [visor, setVisor] = useState<{ inmuebleId: string; index: number } | null>(null);
     const formCloseRef = useRef<() => void>(() => { });
 
     const pedirConfirmacion = (config: Confirmacion) => setConfirmacion(config);
@@ -375,6 +383,17 @@ export const AdminPropertiesTab: React.FC<Props> = ({
     };
 
     const ciudadesFiltradasAdmin = filterDepto ? ciudades.filter(c => c.departamento_id === filterDepto) : [];
+
+    // Fotos de un inmueble en el orden real (la primera es la portada).
+    const fotosDe = (inv: InmuebleConFotos): LightboxImage[] =>
+        [...(inv.imagenes || [])]
+            .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+            .map((img, i) => ({
+                src: getImageUrl(img.url_storage),
+                alt: `${inv.titulo} - foto ${i + 1}`,
+            }));
+
+    const inmuebleVisor = visor ? inmuebles.find(inv => inv.id === visor.inmuebleId) : null;
 
     return (
         <>
@@ -900,7 +919,12 @@ export const AdminPropertiesTab: React.FC<Props> = ({
                                             aria-label={`Seleccionar ${inv.titulo}`}
                                             className="mt-1 h-4 w-4 shrink-0 accent-admin-accent"
                                         />
-                                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-admin-surface-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setVisor({ inmuebleId: inv.id, index: 0 })}
+                                            aria-label={`Ver fotos de ${inv.titulo}`}
+                                            className="h-16 w-16 shrink-0 cursor-zoom-in overflow-hidden rounded-xl bg-admin-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent"
+                                        >
                                             {portada && (
                                                 <img
                                                     src={getImageUrl(portada.url_storage)}
@@ -909,7 +933,7 @@ export const AdminPropertiesTab: React.FC<Props> = ({
                                                     loading="lazy"
                                                 />
                                             )}
-                                        </div>
+                                        </button>
                                         <div className="min-w-0 flex-1">
                                             <p className="line-clamp-2 font-bold text-admin-text" title={inv.titulo}>
                                                 {inv.titulo}
@@ -1086,9 +1110,14 @@ export const AdminPropertiesTab: React.FC<Props> = ({
                                         </td>
                                         <td className="p-4 text-center font-bold text-admin-muted text-sm">{(page * 10) + index + 1}</td>
                                         <td className="p-4 flex items-center gap-3">
-                                            <div className="w-12 h-12 bg-admin-surface-2 rounded-md overflow-hidden min-w-[3rem]">
-                                                {getPortada(inv.imagenes) && <img src={getImageUrl(getPortada(inv.imagenes)!.url_storage)} className="w-full h-full object-cover" alt="img" loading="lazy" />}
-                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setVisor({ inmuebleId: inv.id, index: 0 })}
+                                                aria-label={`Ver fotos de ${inv.titulo}`}
+                                                className="w-12 h-12 shrink-0 cursor-zoom-in overflow-hidden rounded-md bg-admin-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent"
+                                            >
+                                                {getPortada(inv.imagenes) && <img src={getImageUrl(getPortada(inv.imagenes)!.url_storage)} className="w-full h-full object-cover" alt="" loading="lazy" />}
+                                            </button>
                                             <div>
                                                 <div className="mr-2 max-w-[220px] font-bold text-admin-text line-clamp-2" title={inv.titulo}>{inv.titulo}</div>
                                                 <div className="text-xs text-admin-muted">
@@ -1277,6 +1306,16 @@ export const AdminPropertiesTab: React.FC<Props> = ({
                 onCancel={() => setConfirmacion(null)}
                 onConfirm={ejecutarConfirmacion}
             />
+
+            {visor && inmuebleVisor && fotosDe(inmuebleVisor).length > 0 && (
+                <ImageLightbox
+                    images={fotosDe(inmuebleVisor)}
+                    index={visor.index}
+                    onIndexChange={index => setVisor(prev => (prev ? { ...prev, index } : prev))}
+                    onClose={() => setVisor(null)}
+                    title={`Fotos de ${inmuebleVisor.titulo}`}
+                />
+            )}
         </>
     );
 };
