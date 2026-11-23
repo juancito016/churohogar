@@ -6,10 +6,9 @@
  * - Flechas ‹ › y teclado (← →) cuando hay más de una foto.
  */
 
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId } from 'react';
 import { FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
 import { AccessibleModal } from './AccessibleModal';
-import { consumeLightboxHistory } from '../../utils/lightboxHistory';
 
 export interface LightboxImage {
     src: string;
@@ -34,35 +33,6 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
     const titleId = useId();
     const total = images.length;
     const actual = total > 0 ? ((index % total) + total) % total : 0;
-
-    const onCloseRef = useRef(onClose);
-    // Evita cerrar dos veces si la ✕ consume la entrada del historial.
-    const closedRef = useRef(false);
-
-    useEffect(() => {
-        onCloseRef.current = onClose;
-    }, [onClose]);
-
-    // El botón atrás del móvil cierra el visor en lugar de salir de la ficha
-    // o del panel: la entrada empujada al abrirlo se consume aquí.
-    useEffect(() => {
-        const onPopState = () => {
-            if (closedRef.current) return;
-            closedRef.current = true;
-            onCloseRef.current();
-        };
-        window.addEventListener('popstate', onPopState);
-        return () => window.removeEventListener('popstate', onPopState);
-    }, []);
-
-    const handleClose = () => {
-        if (closedRef.current) return;
-        closedRef.current = true;
-        onClose();
-        // Al cerrar con la ✕, el fondo o Escape hay que gastar la entrada que
-        // abrió el visor; si el cierre vino del propio atrás ya no queda nada.
-        consumeLightboxHistory();
-    };
 
     const goTo = (delta: number) => {
         if (total < 2) return;
@@ -89,7 +59,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
     return (
         <AccessibleModal
-            onClose={handleClose}
+            onClose={onClose}
             labelledBy={titleId}
             overlayClassName="z-[80] bg-black/90 backdrop-blur-none p-0"
             className="relative flex h-full w-full max-w-none items-center justify-center"
@@ -99,13 +69,13 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
             <div
                 className="absolute inset-0"
-                onClick={handleClose}
+                onClick={onClose}
                 aria-hidden="true"
             />
 
             <button
                 type="button"
-                onClick={handleClose}
+                onClick={onClose}
                 aria-label="Cerrar"
                 className="absolute right-3 top-3 z-10 rounded-full bg-black/40 p-3 text-white/80 transition hover:bg-black/60 hover:text-white md:right-6 md:top-6"
             >

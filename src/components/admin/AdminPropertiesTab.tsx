@@ -19,7 +19,6 @@ import { useAdminInmuebles, type VistaAdmin } from '../../hooks/useAdminInmueble
 import { getImageUrl, formatPrecio, formatFecha } from '../../utils/helpers';
 import { describirVencimiento } from '../../utils/publication';
 import { mensajeError } from '../../utils/errors';
-import { pushLightboxHistory } from '../../utils/lightboxHistory';
 import { puedeHacer } from '../../types/rbac';
 import toast from 'react-hot-toast';
 import { InmuebleForm } from '../InmuebleForm';
@@ -395,11 +394,6 @@ export const AdminPropertiesTab: React.FC<Props> = ({
             }));
 
     const inmuebleVisor = visor ? inmuebles.find(inv => inv.id === visor.inmuebleId) : null;
-
-    const abrirVisor = (inmuebleId: string) => {
-        pushLightboxHistory();
-        setVisor({ inmuebleId, index: 0 });
-    };
 
     return (
         <>
@@ -927,7 +921,7 @@ export const AdminPropertiesTab: React.FC<Props> = ({
                                         />
                                         <button
                                             type="button"
-                                            onClick={() => abrirVisor(inv.id)}
+                                            onClick={() => setVisor({ inmuebleId: inv.id, index: 0 })}
                                             aria-label={`Ver fotos de ${inv.titulo}`}
                                             className="h-16 w-16 shrink-0 cursor-zoom-in overflow-hidden rounded-xl bg-admin-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent"
                                         >
@@ -1118,7 +1112,7 @@ export const AdminPropertiesTab: React.FC<Props> = ({
                                         <td className="p-4 flex items-center gap-3">
                                             <button
                                                 type="button"
-                                                onClick={() => abrirVisor(inv.id)}
+                                                onClick={() => setVisor({ inmuebleId: inv.id, index: 0 })}
                                                 aria-label={`Ver fotos de ${inv.titulo}`}
                                                 className="w-12 h-12 shrink-0 cursor-zoom-in overflow-hidden rounded-md bg-admin-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent"
                                             >
